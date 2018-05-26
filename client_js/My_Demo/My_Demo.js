@@ -73,7 +73,7 @@ if (Hls.isSupported()) {
 
     p2pConfig = {
         key: 'free',
-        wsSchedulerAddr: `ws://10.21.100.172:8080/ws`,
+        wsSchedulerAddr: `ws://127.0.0.1:8080/ws`,
         wsSignalerAddr: 'ws://120.78.168.126:8081/ws',
         reportInterval: 30,
         defaultUploadBW: 2557670/3*5,
