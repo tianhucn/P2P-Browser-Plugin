@@ -11,7 +11,10 @@
 
 </head>
 
-
+<link href="http://vjs.zencdn.net/5.19.2/video-js.css" rel="stylesheet">
+<script src="http://vjs.zencdn.net/5.19.2/video.js"></script>
+<script src="../dist/videojs-contrib-hlsjs.min.js"></script>
+<script src="../dist/hls-peerify.min.js"></script>
 <script src="../dist/peerify-hls-bundle.js"></script>
 
 <body>
@@ -24,10 +27,13 @@
                 <small>视频在线播放Demo</small>
             </h1>
         </div>
-        <div class="aspectration">
-            <video id="video" controls></video>
-
-        </div>
+        <!--<div class="aspectration">-->
+        <!--<video id="video" controls></video>-->
+        <video id="player" class="video-js vjs-default-skin" height="360" width="640" controls preload="none">
+            <source id="videoSource" src="//bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
+                    type="application/x-mpegURL"/>
+        </video>
+        <!--</div>-->
         <div style="height:20px"></div>
         <div class="input-group input-group-lg">
             <span class="input-group-addon">视频URL</span>
@@ -45,29 +51,29 @@
 
 <div class="container">
     <h1>网络信息</h1>
-    <!--<div class="col-md-6">-->
-        <!--<div class="row">-->
+    <div class="col-md-6">
+        <div class="row">
 
 
-            <!--<div class="sr-only cpm-downloadresult">-->
-                <!--&lt;!&ndash;<p class="help-block">Downloading...</p>&ndash;&gt;-->
-                <!--<table id="table-body" class="table table-hover">-->
-                    <!--<thead>-->
-                    <!--<tr>-->
-                        <!--<th>sn</th>-->
-                        <!--<th>url</th>-->
-                        <!--<th>level</th>-->
-                        <!--<th>size</th>-->
-                        <!--<th>source</th>-->
-                    <!--</tr>-->
-                    <!--</thead>-->
-                    <!--<tbody></tbody>-->
-                <!--</table>-->
-            <!--</div>-->
-        <!--</div>-->
-    <!--</div>-->
+            <div class="sr-only cpm-downloadresult">
+                <!--<p class="help-block">Downloading...</p>-->
+                <table id="table-body" class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>sn</th>
+                        <th>url</th>
+                        <th>level</th>
+                        <th>size</th>
+                        <th>source</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-    <!--<div class="col-md-6">-->
+    <div class="col-md-6">
         <div id="mynetwork"></div>
         <div id="node-table">
             <table class="table table-hover">
@@ -83,7 +89,7 @@
                 <tbody id="node-info"></tbody>
             </table>
         </div>
-    <!--</div>-->
+    </div>
 </div>
 <footer class="bs-docs-footer">
     <div class="container">
