@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>hls-peerify</title>
+</head>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<!--<script src="../dist/hls-peerify.js"></script>-->
+<script src="../hls-peerify.js"></script>
+<body>
+<video id="video" controls></video>
+<script>
+
+    console.log(JSON.stringify(HlsPeerify.uaParserResult, null, 2));
+    console.log('hls.js version: ' + Hls.version);
+    console.log('p2p plugin version: ' + HlsPeerify.version);
+    if(Hls.isSupported()) {
+        var video = document.getElementById('video');
+
+        var hlsjsConfig = {
+
+//            maxBufferSize: 0,
+//            maxBufferLength: 30,
+            liveSyncDuration: 60,
+            fragLoadingTimeOut: 4000,              // used by fragment-loader
+        };
+        var p2pConfig = {
+            key: 'free',
+            wsSchedulerAddr: `ws://127.0.0.1:8080/ws`,
+            wsSignalerAddr: 'ws://120.78.168.126:8081/ws',
+            reportInterval: 30,
+//            defaultUploadBW: 2561241,
+//            defaultUploadBW: 2561241 + 100,
+//            defaultUploadBW: 853290*3+1000,
+            defaultUploadBW: 2557670/3*5,
+//            transitionEnabled: true,
+            transitionEnabled: false,
+            transitionCheckInterval: 90
+        };
+
+        var hls = new Hls(hlsjsConfig);
+
+        var p2pPlugin = new HlsPeerify(hls, p2pConfig);
+
+//        hls.loadSource('https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8');
+//        hls.loadSource('https://video-dev.github.io/streams/test_001/stream.m3u8?a=123');
+//        hls.loadSource('https://moeplayer.b0.upaiyun.com/dplayer/hls/hikarunara.m3u8');
+//        hls.loadSource('http://wowza.peer5.com/live/smil:bbb_abr.smil/chunklist_w794046364_b2204000.m3u8');
+        hls.loadSource('http://112.90.52.139/hls/pear.m3u8');
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED,function(event, data) {
+
+            hls.loadLevel = 0;
+            video.play();
+        });
+
+        hls.on(Hls.Events.ERROR, function (event, data) {
+            var errorType = data.type;
+            var errorDetails = data.details;
+            var errorFatal = data.fatal;
+            console.warn('error details:'+errorDetails);
+//      switch(data.details) {
+//        case hls.ErrorDetails.FRAG_LOAD_ERROR:
+//          // ....
+//          break;
+//        default:
+//          break;
+//      }
+        });
+
+
+    }
+</script>
+</body>
+</html>
