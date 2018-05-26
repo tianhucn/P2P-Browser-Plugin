@@ -21,7 +21,6 @@
     /*height: 0; !*容器高度是由padding来控制，盒模型原理告诉你一切*!*/
     width: 100%;
     padding-top: 50%;
-    background-color: black;
 }
 
 .aspectration > * {
