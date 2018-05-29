@@ -6,17 +6,20 @@ package main
 
 import (
 	"flag"
-	log "github.com/sirupsen/logrus"
-	"net/http"
 	"fmt"
+	"net/http"
+	"os"
+	"syscall"
+
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 func init() {
-	viper.SetConfigName("config")                                     // name of config file (without extension)
+	viper.SetConfigName("config") // name of config file (without extension)
 	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()                                          // Find and read the config file
-	if err != nil {                                                      // Handle errors reading the config file
+	err := viper.ReadInConfig() // Find and read the config file
+	if err != nil {             // Handle errors reading the config file
 		log.Fatalf("Fatal error config file: %s \n", err)
 	}
 	viper.WatchConfig()
@@ -38,6 +41,11 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	//防止输出出现乱码
+	handle := syscall.Handle(os.Stdout.Fd())
+	kernel32DLL := syscall.NewLazyDLL("kernel32.dll")
+	setConsoleModeProc := kernel32DLL.NewProc("SetConsoleMode")
+	setConsoleModeProc.Call(uintptr(handle), 0x0001|0x0002|0x0004)
 
 	log.Println(viper.GetInt("live.maxLayers"))
 
@@ -54,9 +62,9 @@ func main() {
 			panic("no room in query string")
 			return
 		}
-		var  hub *Hub
+		var hub *Hub
 		if key == "free" {
-			if roomMap[room] == nil{                                                          //该频道不存在
+			if roomMap[room] == nil { //该频道不存在
 				log.Printf("create new room %s", room)
 				hub = newHub(room, mode)
 				roomMap[room] = hub
@@ -111,9 +119,8 @@ func main() {
 		log.Fatal("ListenAndServe: ", err)
 	}
 
-
 }
 
-func setupHub(hub *Hub)  {
+func setupHub(hub *Hub) {
 
 }
