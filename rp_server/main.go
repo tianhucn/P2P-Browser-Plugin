@@ -74,6 +74,24 @@ func wsServe(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func visServer(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	//log.Printf("Scheme %s", r.URL.Scheme)
+	room := r.Form.Get("room")
+	if room == "" {
+		panic("no room in query string")
+		return
+	}
+	log.Printf("HandleFunc /vis room: %s", room)
+	hub := roomMap[room]
+	if hub == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	log.Printf("serveVisWs")
+	serveVisWs(hub, w, r)
+}
+
 func main() {
 	//防止输出出现乱码
 	handle := syscall.Handle(os.Stdout.Fd())
@@ -84,28 +102,9 @@ func main() {
 	log.Println(viper.GetInt("live.maxLayers"))
 
 	flag.Parse()
-	roomMap := make(map[string]*Hub)
 	http.HandleFunc("/", serveHome)
 	http.HandleFunc("/ws", wsServe)
-	http.HandleFunc("/vis", func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
-		//log.Printf("Scheme %s", r.URL.Scheme)
-		room := r.Form.Get("room")
-		if room == "" {
-			panic("no room in query string")
-			return
-		}
-		log.Printf("HandleFunc /vis room: %s", room)
-		hub := roomMap[room]
-		if hub == nil {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-		log.Printf("serveVisWs")
-		serveVisWs(hub, w, r)
-		//log.Printf("serveVisHttp")
-		//serveVisHttp(hub, w, r)
-	})
+	http.HandleFunc("/vis", visServer)
 	err := http.ListenAndServe(*addr, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
