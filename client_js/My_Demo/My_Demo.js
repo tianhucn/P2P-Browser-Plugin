@@ -84,7 +84,7 @@ function playVideo() {
 
     var p2pConfig = {
         key: 'free',
-        wsSchedulerAddr: `ws://120.77.252.69:8080/ws`,
+        wsSchedulerAddr: `ws://10.21.108.21:8080/ws`,
         wsSignalerAddr: 'ws://120.78.168.126:8081/ws',
         reportInterval: 30,
 //            defaultUploadBW: 2561241,

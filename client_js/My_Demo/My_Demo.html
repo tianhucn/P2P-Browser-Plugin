@@ -11,11 +11,14 @@
 
 </head>
 
-<link href="http://vjs.zencdn.net/5.19.2/video-js.css" rel="stylesheet">
+
+<script src="../dist/peerify-hls-bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<!--<script src="../dist/hls-peerify.js"></script>-->
+<script src="../hls-peerify.js"></script>
 <script src="http://vjs.zencdn.net/5.19.2/video.js"></script>
 <script src="../dist/videojs-contrib-hlsjs.min.js"></script>
 <script src="../dist/hls-peerify.min.js"></script>
-<script src="../dist/peerify-hls-bundle.js"></script>
 
 <body>
 
@@ -27,21 +30,19 @@
                 <small>视频在线播放Demo</small>
             </h1>
         </div>
-        <!--<div class="aspectration">-->
-        <!--<video id="video" controls></video>-->
-        <div id="video-div">
+        <div class="aspectration">
+            <video id="video" controls></video>
 
         </div>
-        <!--</div>-->
         <div style="height:20px"></div>
         <div class="input-group input-group-lg">
             <span class="input-group-addon">视频URL</span>
             <input type="text" class="form-control" id="videoURL" placeholder="请在此输入视频链接"
-                   aria-describedby="basic-addon2" value="//bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8">
+                   aria-describedby="basic-addon2" value="https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8">
 
             <span class="input-group-btn">
             <button class="btn btn-default" type="button" onclick="resetURL()">重置</button>
-            <button class="btn btn-primary" type="button" onclick="handlePlayButton()">播放</button>
+            <button class="btn btn-primary" type="button" onclick="playVideo()">播放</button>
             </span>
         </div>
     </div>
@@ -52,9 +53,7 @@
     <h1>网络信息</h1>
     <div class="col-md-6">
         <div class="row">
-
-
-            <div class="sr-only cpm-downloadresult">
+            <div class="cpm-downloadresult">
                 <!--<p class="help-block">Downloading...</p>-->
                 <table id="table-body" class="table table-hover">
                     <thead>
