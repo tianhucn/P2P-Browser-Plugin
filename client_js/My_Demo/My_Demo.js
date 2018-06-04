@@ -1,17 +1,21 @@
+
 var video;
-var hlsjsConfig;
-var p2pConfig;
+// var hlsjsConfig;
+// var p2pConfig;
+// var hls;
+// var p2pPlugin;
 
 var network, nodes, edges;
 var nodeIds;
 var nodeInformation;
-var player;
 
 var cpm = {
     downloadresult: document.querySelectorAll('.cpm-downloadresult')[0],
     table: document.querySelectorAll('#table-body tbody')[0]
 };
 var addToTable = function (sn, url, level, downloaded, source) {
+    console.log(cpm.table);
+    console.log("sagasdg");
     cpm.table.innerHTML +=
         `<tr>
                     <td>${sn}</td>
@@ -58,76 +62,80 @@ console.log('p2p plugin version: ' + Hls.pluginVersion);
 
 if (Hls.isSupported()) {
 
-
-    p2pConfig = {
-        key: 'free',
-        wsSchedulerAddr: `ws://127.0.0.1:8080/ws`,
-        wsSignalerAddr: 'ws://120.78.168.126:8081/ws',
-        reportInterval: 30,
-        defaultUploadBW: 2557670 / 3 * 5,
-        transitionEnabled: false,
-        transitionCheckInterval: 90
-    };
-
-    // hlsjsConfig.p2pConfig = p2pConfig;
     playVideo();
 
+//        hls.disableP2P();
+//
+//        setTimeout(function () {
+//            hls.enableP2P();
+//        }, 10000)
 }
 
 
 function playVideo() {
+    video = document.getElementById('video');
+
+    var hlsjsConfig = {
+//        debug: true,
+//      pLoader : pLoader,
+        liveSyncDuration: 60,
+        fragLoadingTimeOut: 4000,
+    };
+
+    var p2pConfig = {
+        key: 'free',
+        wsSchedulerAddr: `ws://10.21.108.21:8080/ws`,
+        wsSignalerAddr: 'ws://120.78.168.126:8081/ws',
+        reportInterval: 30,
+//            defaultUploadBW: 2561241,
+//            defaultUploadBW: 2561241 + 100,
+//            defaultUploadBW: 853290*3+1000,
+        defaultUploadBW: 2557670/3*5,
+//            transitionEnabled: true,
+        transitionEnabled: false,
+        transitionCheckInterval: 90
+    };
+    var hls = new Hls(hlsjsConfig);
+    var p2pPlugin = new HlsPeerify(hls, p2pConfig);
+
     nodeIds = new Array();
     nodeInformation = {};
-    var videoURL = document.getElementById("videoURL").value;
-    document.getElementById('video-div').innerHTML = "        <video id=\"player\" class=\"video-js vjs-default-skin\" height=\"360\" width=\"640\" controls preload=\"none\">\n" +
-        "            <source id=\"videoSource\" src=\""+videoURL+"\"\n" +
-        "                    type=\"application/x-mpegURL\"/>\n" +
-        "        </video>"
     createTopo();
     document.getElementById('node-info').innerHTML = "";
+    cpm.table.innerHTML = "";
 
-
-    player = videojs('#player', {
-        autoplay: true,
-        html5: {
-            hlsjsConfig: {
-//                maxBufferSize: 0,
-//                maxBufferLength: 30,
-                liveSyncDurationCount: 10,
-//                liveSyncDurationCount: 5,
-                fragLoadingTimeOut: 4000,              // used by fragment-loader
-            }
-        }
+//        hls.loadSource('https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8');
+//        hls.loadSource('https://video-dev.github.io/streams/test_001/stream.m3u8');
+    var videoURL = document.getElementById("videoURL").value;
+    hls.loadSource(videoURL);
+//        hls.loadSource('http://wowza.peer5.com/live/smil:bbb_abr.smil/chunklist_w794046364_b2204000.m3u8');
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+        hls.loadLevel = 0;
+        video.play();
     });
-
-
-    new HlsPeerify(player.tech_.sourceHandler_.hls, p2pConfig);
-
-    player.tech_.on(Hls.Events.MANIFEST_LOADED, function (e) {
-        cpm.downloadresult.classList.remove('sr-only');
-    });
-
-    player.tech_.on(Hls.Events.FRAG_LOADED, function (e, data) {
+    hls.on(Hls.Events.FRAG_LOADED, (id, data) => {
         var frag = data.frag;
 //            console.warn(`sn ${frag.sn} relurl ${frag.relurl} level ${frag.level} downloaded ${frag.loaded} source ${frag.loadByXhr?'CDN':'P2P'}`);
-        var source = frag.loadByXhr ? 'CDN' : 'P2P';
+        var source = frag.loadByXhr?'CDN':'P2P';
         addToTable(frag.sn, frag.relurl, frag.level, frag.loaded, source);
     });
+
+    hls.on(Hls.Events.ERROR, function (event, data) {
+        var errorType = data.type;
+        var errorDetails = data.details;
+        var errorFatal = data.fatal;
+        console.warn('error details:'+errorDetails);
+    });
+
 
 }
 
 function resetURL() {
-    var oldPlayer = document.getElementById('player');
-    videojs(oldPlayer).dispose();
-    document.getElementById("videoURL").value = '//bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8'
+    document.getElementById("videoURL").value = 'https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8'
     playVideo();
 }
 
-function handlePlayButton() {
-    var oldPlayer = document.getElementById('player');
-    videojs(oldPlayer).dispose();
-    playVideo();
-}
 
 function createTopo() {
     // create an array with nodes
