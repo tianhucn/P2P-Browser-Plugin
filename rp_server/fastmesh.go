@@ -5,23 +5,21 @@ import "log"
 const UINT_MAX = ^uint(0)
 
 type TreeNode struct {
-	id          string
-	layer       uint
-	parents     []*TreeNode
-	children    []*TreeNode
+	id       string
+	layer    uint
+	parents  []*TreeNode
+	children []*TreeNode
 }
 
 type FastMesh struct {
-
 }
 
-func (this *FastMesh) AddEdge(parent, child *TreeNode)  {
+func (this *FastMesh) AddEdge(parent, child *TreeNode) {
 	parent.children = append(parent.children, child)
 	child.parents = append(child.parents, parent)
 	//递归计算新的layer
-	//this.UpdateLayer(child)
+	this.UpdateLayer(child)
 }
-
 
 func (this *FastMesh) DeleteEdge(parent, child *TreeNode) {
 	for i, v := range parent.children {
@@ -34,11 +32,10 @@ func (this *FastMesh) DeleteEdge(parent, child *TreeNode) {
 		if v == parent {
 			child.parents = append(child.parents[:i], child.parents[i+1:]...)
 			//递归计算新的layer
-			//this.UpdateLayer(child)
+			this.UpdateLayer(child)
 		}
 	}
 }
-
 
 func (this *FastMesh) UpdateLayer(node *TreeNode) {
 	oldLayer := node.layer
@@ -47,7 +44,7 @@ func (this *FastMesh) UpdateLayer(node *TreeNode) {
 	} else {
 		newLayer := UINT_MAX
 		for _, v := range node.parents {
-			if v.layer + 1 < newLayer {
+			if v.layer+1 < newLayer {
 				newLayer = v.layer + 1
 			}
 		}
@@ -56,7 +53,7 @@ func (this *FastMesh) UpdateLayer(node *TreeNode) {
 	log.Printf("node %s layer: %d", node.id, node.layer)
 	if len(node.children) > 0 {
 		for _, c := range node.children {
-			if c.layer > oldLayer {                                   //防止死循环
+			if c.layer > oldLayer { //防止死循环
 				this.UpdateLayer(c)
 			}
 		}

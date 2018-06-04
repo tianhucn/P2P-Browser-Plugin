@@ -6,17 +6,18 @@ package main
 
 import (
 	"bytes"
-	log "github.com/sirupsen/logrus"
-	"net/http"
-	"time"
-	"github.com/gorilla/websocket"
-	"fmt"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
-	"io"
 	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"time"
+
+	"github.com/gorilla/websocket"
+	log "github.com/sirupsen/logrus"
 	//"github.com/sirupsen/logrus"
 
 	"github.com/mohong122/ip2region/binding/golang"
@@ -44,34 +45,37 @@ var (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {                           //跨域
+	CheckOrigin: func(r *http.Request) bool { //跨域
 		return true
 	},
 }
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
-	hub              *Hub
+	hub *Hub
 
 	// The websocket connection.
-	conn            *websocket.Conn
+	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
-	send            chan []byte
+	send chan []byte
 
-	PeerId          string              //唯一标识
-	UploadBW        int64              //单位bps
-	Level           int                 //节点在网络结构中的层级
-	IpInfo          IpInfo
+	PeerId   string //唯一标识
+	UploadBW int64  //单位bps
+	Level    int    //节点在网络结构中的层级
 
-	treeNode        TreeNode
+	IpInfo IpInfo
+
+	treeNode TreeNode
+
+	isActive bool //记录是否是活跃节点，用于筛选
 
 	Stat StatMsg
 
-	ResidualBW      int64
+	ResidualBW int64
 
-	streamMap       map[string]int    //peerId --> substreams
-	subStreamRate   int64
+	streamMap     map[string]int //peerId --> substreams
+	subStreamRate int64
 }
 
 type IpInfo struct {
@@ -81,7 +85,6 @@ type IpInfo struct {
 	City     string
 	ISP      string
 }
-
 
 func (c *Client) sendMessage(msg []byte) error {
 	select {
@@ -192,14 +195,15 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	client := &Client{
-		hub: hub,
-		conn: conn,
-		send: make(chan []byte, 256),
-		PeerId: UniqueId(),
-		UploadBW: hub.P2pConfig.Live.DefaultUploadBW,   //默认值，应该由节点上报
+		hub:        hub,
+		conn:       conn,
+		send:       make(chan []byte, 256),
+		PeerId:     UniqueId(),
+		UploadBW:   hub.P2pConfig.Live.DefaultUploadBW, //默认值，应该由节点上报
 		ResidualBW: hub.P2pConfig.Live.DefaultUploadBW,
-		streamMap: make(map[string]int),
-		}
+		streamMap:  make(map[string]int),
+		isActive:   false,
+	}
 	client.treeNode.id = client.PeerId
 
 	//记录client的region信息
