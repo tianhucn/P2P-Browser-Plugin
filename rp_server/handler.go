@@ -173,6 +173,7 @@ func (this *EnterHandler) Handle() {
 		node := VisNode{
 			Id: this.client.PeerId,
 			Info: VisNodeInfo{
+				IP:       this.client.conn.RemoteAddr().String(),
 				ISP:      ipInfo.ISP,
 				Country:  ipInfo.Country,
 				Province: ipInfo.Province,

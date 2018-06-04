@@ -1,11 +1,12 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
-	"os"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -22,24 +23,24 @@ func init() {
 }
 
 type VisNode struct {
-	Id           string         `json:"id"`
-	Parents      []interface{}       `json:"parents"`
-	Info         VisNodeInfo    `json:"info"`
+	Id      string        `json:"id"`
+	Parents []interface{} `json:"parents"`
+	Info    VisNodeInfo   `json:"info"`
 }
 
 type VisNodeInfo struct {
-	ISP          string         `json:"ISP"`
-	Country      string         `json:"country"`
-	Province     string         `json:"province"`
-	City         string         `json:"city"`
-	UploadBW     int64         `json:"ul_bw"`
-} 
-
+	IP       string `json:"IP"`
+	ISP      string `json:"ISP"`
+	Country  string `json:"country"`
+	Province string `json:"province"`
+	City     string `json:"city"`
+	UploadBW int64  `json:"ul_bw"`
+}
 
 func (this *VisClient) handle(message []byte) {
 	log.Printf("[VisClient.handle] %s", string(message))
 	action := struct {
-		Action     string `json:"action"`
+		Action string `json:"action"`
 	}{}
 	if err := json.Unmarshal(message, &action); err != nil {
 		//logrus.Errorf("[Client.handle] json.Unmarshal %s", err.Error())
@@ -70,27 +71,28 @@ type GETTOPOHandler struct {
 	visclient *VisClient
 }
 
-func (this *GETTOPOHandler) Handle()  {
+func (this *GETTOPOHandler) Handle() {
 
 	nodes := make([]VisNode, 0)
 	this.visclient.hub.clients.Range(func(key, value interface{}) bool {
 		client := value.(*Client)
 		log.Printf("[GETTOPOHandler] v.id %s", client.PeerId)
 		node := VisNode{
-			Id: client.PeerId,
+			Id:      client.PeerId,
 			Parents: make([]interface{}, 0),
 			Info: VisNodeInfo{
-				ISP: client.IpInfo.ISP,
-				Country: client.IpInfo.Country,
+				IP:       client.conn.RemoteAddr().String(),
+				ISP:      client.IpInfo.ISP,
+				Country:  client.IpInfo.Country,
 				Province: client.IpInfo.Province,
-				City: client.IpInfo.City,
+				City:     client.IpInfo.City,
 				UploadBW: client.UploadBW,
 			},
 		}
 		for _, parent := range client.treeNode.parents {
 			//log.Warn(client.streamMap[parent.id])
 			node.Parents = append(node.Parents, map[string]interface{}{
-				"id": parent.id,
+				"id":         parent.id,
 				"substreams": client.streamMap[parent.id],
 			})
 		}
@@ -98,8 +100,8 @@ func (this *GETTOPOHandler) Handle()  {
 		return true
 	})
 	resp := map[string]interface{}{
-		"action": "topology",
-		"nodes": nodes,
+		"action":       "topology",
+		"nodes":        nodes,
 		"totalstreams": this.visclient.hub.P2pConfig.Live.Substreams,
 	}
 	this.visclient.conn.WriteJSON(resp)
@@ -115,25 +117,25 @@ func (this *GETStatsHandler) Handle() {
 		"action": "statistics",
 		"result": map[string]interface{}{
 			"source": this.visclient.hub.Stats.CDN,
-			"p2p": this.visclient.hub.Stats.P2p,
+			"p2p":    this.visclient.hub.Stats.P2p,
 		},
 	}
 	this.visclient.conn.WriteJSON(resp)
 }
 
-func serveVisHttp(hub *Hub, w http.ResponseWriter, r *http.Request)  {
+func serveVisHttp(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	nodes := make([]VisNode, 0)
 	hub.clients.Range(func(key, value interface{}) bool {
 		client := value.(*Client)
 		log.Printf("[GETTOPOHandler] v.id %s", client.PeerId)
 		node := VisNode{
-			Id: client.PeerId,
+			Id:      client.PeerId,
 			Parents: make([]interface{}, 0),
 			Info: VisNodeInfo{
-				ISP: client.IpInfo.ISP,
-				Country: client.IpInfo.Country,
+				ISP:      client.IpInfo.ISP,
+				Country:  client.IpInfo.Country,
 				Province: client.IpInfo.Province,
-				City: client.IpInfo.City,
+				City:     client.IpInfo.City,
 			},
 		}
 		for _, parent := range client.treeNode.parents {
@@ -144,9 +146,8 @@ func serveVisHttp(hub *Hub, w http.ResponseWriter, r *http.Request)  {
 	})
 	resp := map[string]interface{}{
 		"action": "topology",
-		"nodes": nodes,
+		"nodes":  nodes,
 	}
 	b, _ := json.Marshal(resp)
 	w.Write(b)
 }
-
