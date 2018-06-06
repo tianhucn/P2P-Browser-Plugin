@@ -1,14 +1,14 @@
 ## 浏览器P2P项目对接文档
 
-###调试使用方法
-####启动rp服务器
+### 调试使用方法
+#### 启动rp服务器
 - 进入rp_server目录，运行go build 命令，生成可执行文件，
 - 运行可执行文件rp_server.exe
 - 编译可能会报错，需将用到的第三方包加到你的go path目录下
-####拓扑图可视化
+#### 拓扑图可视化
 - 进入client_visual目录，npm install（首次进入），下载相关包
 - 执行npm run start，过一会默认浏览器会显示实时拓扑图界面
-####视频请求
+#### 视频请求
 - 进入client_js目录，如果有修改，执行npm run build-hls-peerify
 - 打开demo目录，找到peerify-script-demo.html，如果rp server在你自己电脑，那么这个文件代码的66行，需要修改为wsSchedulerAddr: `ws://127.0.0.1:8080/ws`,
 - 如果是外网ip，修改下ip即可
