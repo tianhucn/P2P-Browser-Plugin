@@ -49,7 +49,8 @@ class Topology extends Component {
             minReconnectionDelay: 3*1000
 
         };
-        const url =`ws://127.0.0.1:8080/vis?room=${encodeURIComponent('http://112.90.52.139/hls/pear.m3u8')}`;
+        const url =`ws://127.0.0.1:8080/vis?room=${encodeURIComponent('https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8')}`;
+        //const url =`ws://127.0.0.1:8080/vis?room=${encodeURIComponent('http://112.90.52.139/hls/pear.m3u8')}`;
         // const url =`ws://127.0.0.1:8080/vis?room=${encodeURIComponent('https://moeplayer.b0.upaiyun.com/dplayer/hls/hikarunara.m3u8')}`;
         let websocket = new ReconnectingWebSocket(url, undefined, wsOptions);
         this.websocket = websocket;
@@ -139,7 +140,8 @@ class Topology extends Component {
     _handleJoin(node) {
         let info = node.info;
         // let label = `${info.country!='0'?info.country:''}${info.province!='0'?info.province:''}${info.city!='0'?info.city:''}${info.ISP!='0'?info.ISP:''}${node.id}`;
-        let label = `${node.id.substr(0,2)}(${Math.round(info.ul_bw/8/1024)}KB/s)`;
+        //let label = `${node.id.substr(0,2)}(${Math.round(info.ul_bw/8/1024)}KB/s)`;
+        let label = `${node.id.substr(0,4)}[${info.IP}](${Math.round(info.ul_bw/8/1024)}KB/s)`;
         this.setState({
             graph: {
                 nodes: [
@@ -215,7 +217,8 @@ class Topology extends Component {
         for (let node of newNodes) {
             let info = node.info;
             // let label = `${info.country!='0'?info.country:''}${info.province!='0'?info.province:''}${info.city!='0'?info.city:''}${info.ISP!='0'?info.ISP:''}${node.id}`;
-            let label = `${node.id.substr(0,2)}(${Math.round(info.ul_bw/8/1024)}KB/s)`;
+            //let label = `${node.id.substr(0,2)}(${Math.round(info.ul_bw/8/1024)}KB/s)`;
+            let label = `${node.id.substr(0,4)}[${info.IP}](${Math.round(info.ul_bw/8/1024)}KB/s)`;
             nodes.push({
                 id: node.id,
                 label: label
