@@ -324,6 +324,7 @@ type GetParentsHandler struct {
 
 func (this *GetParentsHandler) Handle() {
 	log.Printf("GetParentsHandler Handle")
+	this.client.isActive = true
 	if this.client.hub.ClientNum >= 2 {
 		parents := this.client.hub.GenParents(this.client)
 		var sliceP []interface{}
