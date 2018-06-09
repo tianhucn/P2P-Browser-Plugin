@@ -1,0 +1,28 @@
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body onload="showspeed()">
+
+</body>
+<SCRIPT language=JavaScript>
+    var st = new Date();
+</SCRIPT>
+
+<IMG height=300 alt=测试图片 src="http://sp2.yokacdn.com/photos/f3/4f/702018/photo_322092_500.jpg">
+
+<SCRIPT language=JavaScript>
+    function showspeed()
+    {
+        var fs = 35.4*1024;  //img.jpg文件大小(K)
+        var l = 2;    //小数点的位数
+        var et = new Date();
+        var alltime = fs*1000/(et - st);
+        var Lnum = Math.pow(10,l);
+        var calcspeed = Math.round(alltime*Lnum)/Lnum;
+        console.log("您的下载速度为："+calcspeed+" (K/秒)");
+    }
+</SCRIPT>
+</html>
