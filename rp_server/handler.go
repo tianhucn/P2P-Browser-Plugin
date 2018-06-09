@@ -328,7 +328,7 @@ func (this *GetParentsHandler) Handle() {
 		parents := this.client.hub.GenParents(this.client)
 		var sliceP []interface{}
 		for _, value := range parents {
-			sliceP = append(sliceP, map[string]interface{}{"peer_id": value.PeerId, "residual_bw": value.ResidualBW}) //当前带宽
+			sliceP = append(sliceP, map[string]interface{}{"peer_id": value.PeerId, "residual_bw": value.ResidualBW, "requestip": this.client.conn.RemoteAddr().String(), "ip": value.conn.RemoteAddr().String()}) //当前带宽
 		}
 		log.Printf("parents: %v", sliceP)
 		this.client.hub.sendJsonToClient(this.client.PeerId, map[string]interface{}{
