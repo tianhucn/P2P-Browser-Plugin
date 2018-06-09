@@ -264,8 +264,23 @@ export default class P2PSignaler extends EventEmitter {
             }
             return true;
         });
+
         //按上行带宽从小到大排序
         nodes.sort((a, b) => a.residual_bw - b.residual_bw);
+        //相同子网优先：在剩余带宽大于本批最大剩余带宽的0.7情况下，选出拥有最大带宽的相同子网节点放到队尾
+        var max_bw = nodes[nodes.length-1].residual_bw;
+        for(let i = 0; i > nodes.length-1 ; i++){
+            console.log("**********************");
+            var request_ip = nodes[i].requestip.split(".", 3);
+            var parent_ip = nodes[i].ip.split(".", 3);
+            if(request_ip == parent_ip && nodes[i].residual_bw > 0.7*max_bw){
+                console.log("+++++++++++++++++++++++++++");
+                var temp = nodes[i];
+                nodes.split(i,1);
+                nodes.push(temp);
+            }
+            break;
+        }
 
         this.candidateParents = nodes;
         // console.log(`candidateParents: ${JSON.stringify(this.candidateParents)}`);
@@ -281,6 +296,7 @@ export default class P2PSignaler extends EventEmitter {
             parent = this.candidateParents.pop();
         }
         const subStreamRate = this.scheduler.substreams.substreamRate;
+
         if (parent.residual_bw >= subStreamRate) {
             let copys = Math.floor(parent.residual_bw/subStreamRate);
             console.warn(`residual_bw ${parent.residual_bw} subStreamRate ${subStreamRate}`);
