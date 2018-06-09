@@ -26,6 +26,7 @@ type VisNode struct {
 	Id      string        `json:"id"`
 	Parents []interface{} `json:"parents"`
 	Info    VisNodeInfo   `json:"info"`
+	//P2Pratio float32       `json:"p2pratio"`
 }
 
 type VisNodeInfo struct {
@@ -74,6 +75,9 @@ type GETTOPOHandler struct {
 func (this *GETTOPOHandler) Handle() {
 
 	nodes := make([]VisNode, 0)
+	allnode := 0
+	p2pnode := 0
+
 	this.visclient.hub.clients.Range(func(key, value interface{}) bool {
 		client := value.(*Client)
 		log.Printf("[GETTOPOHandler] v.id %s", client.PeerId)
@@ -89,6 +93,10 @@ func (this *GETTOPOHandler) Handle() {
 				UploadBW: client.UploadBW,
 			},
 		}
+		allnode = allnode + 1
+		if client.isP2P {
+			p2pnode = p2pnode + 1
+		}
 		for _, parent := range client.treeNode.parents {
 			//log.Warn(client.streamMap[parent.id])
 			node.Parents = append(node.Parents, map[string]interface{}{
@@ -99,10 +107,14 @@ func (this *GETTOPOHandler) Handle() {
 		nodes = append(nodes, node)
 		return true
 	})
+
+	p2pratio := 100 * float64(p2pnode) / float64(allnode)
+	log.Printf("--p2p ratio-----%d,%d,%f %%", allnode, p2pnode, p2pratio)
 	resp := map[string]interface{}{
 		"action":       "topology",
 		"nodes":        nodes,
 		"totalstreams": this.visclient.hub.P2pConfig.Live.Substreams,
+		"p2pratio":     p2pratio,
 	}
 	this.visclient.conn.WriteJSON(resp)
 }

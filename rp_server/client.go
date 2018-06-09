@@ -69,8 +69,8 @@ type Client struct {
 	treeNode TreeNode
 
 	isActive bool //记录是否是活跃节点，用于筛选
-
-	Stat StatMsg
+	isP2P    bool //记录是否p2p
+	Stat     StatMsg
 
 	ResidualBW int64
 
@@ -203,6 +203,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		ResidualBW: hub.P2pConfig.Live.DefaultUploadBW,
 		streamMap:  make(map[string]int),
 		isActive:   false,
+		isP2P:      false,
 	}
 	client.treeNode.id = client.PeerId
 
