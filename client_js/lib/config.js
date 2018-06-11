@@ -4,11 +4,12 @@
 
 
 //时间单位统一为秒
-let defaultP2PConfig = {
+var defaultP2PConfig = {
     key: 'free',                                //连接RP服务器的API key
     mode: 'live',                               //播放的流媒体类别，分为‘live‘和‘vod’两种，默认live
 
-    wsSchedulerAddr: 'ws://10.21.100.172:8080/ws',            //调度服务器地址
+    wsSchedulerAddr: `ws://127.0.0.1:8080/ws`,
+   // wsSchedulerAddr: 'ws://120.78.168.126:3389',            //调度服务器地址
     wsSignalerAddr: 'ws://120.78.168.126:8081/ws',          //信令服务器地址
     wsMaxRetries: 10,                           //发送数据重试时间间隔
     wsReconnectInterval: 5,                     //websocket重连时间间隔

@@ -5,11 +5,12 @@
     <title>hls-peerify</title>
 </head>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-<!--<script src="../dist/hls-peerify.js"></script>-->
-<script src="../hls-peerify.js"></script>
+<!--<script src="../dist/hls-peerify.js"></script>
 <script src="http://vjs.zencdn.net/5.19.2/video.js"></script>
 <script src="../dist/videojs-contrib-hlsjs.min.js"></script>
-<script src="../dist/hls-peerify.min.js"></script>
+<script src="../dist/hls-peerify.min.js"></script>-->
+
+<script src="../hls-peerify.js"></script>
 <body>
 <div id="main">
     <video id="video" width="320" height="240" controls></video>
@@ -63,8 +64,10 @@
         };
         var p2pConfig = {
             key: 'free',
-            wsSchedulerAddr: `ws://120.77.252.69:8080/ws`,
+            //wsSchedulerAddr: `ws://120.77.252.69:8080/ws`,
+            wsSchedulerAddr: `ws://127.0.0.1:8080/ws`,
             wsSignalerAddr: 'ws://120.78.168.126:8081/ws',
+            //wsSignalerAddr: 'ws://127.0.0.1:8081/ws',
             reportInterval: 30,
 //            defaultUploadBW: 2561241,
 //            defaultUploadBW: 2561241 + 100,

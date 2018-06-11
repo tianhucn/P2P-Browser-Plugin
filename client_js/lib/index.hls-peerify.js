@@ -73,6 +73,9 @@ class HlsPeerify extends EventEmitter {
 
         //实例化信令
         this.signaler = new P2PSignaler(channel, this.config, browserInfo);
+        this.signaler.on("stats", stats => {
+            this.emit("stats", stats);
+        });
 
         //实例化BufferManager
         this.bufMgr = new BufferManager(this.config);
@@ -110,13 +113,15 @@ class HlsPeerify extends EventEmitter {
                 log(`FRAG_LOADED ${data.frag.sn} loadByP2P`);
                 this.p2pDownloaded += data.frag.loaded;
             }
+            //计算平均streaming rate
+            let bitrate = data.frag.loaded*8/data.frag.duration;
+            this.emit('stats', {bitrate: Math.round(bitrate)});
             if (!this.signaler.connected && this.config.p2pEnabled) {
 
-                //计算平均streaming rate
-                let bitrate = data.frag.loaded*8/data.frag.duration;
+                // let bitrate = data.frag.loaded*8/data.frag.duration;
                 //计算子流码率
                 this.signaler.scheduler.substreams.bitrate = Math.round(bitrate);
-                console.warn(`FRAG_LOADED bitrate ${bitrate}`);
+                // console.warn(`FRAG_LOADED bitrate ${bitrate}`);
 
                 this.signaler.resumeP2P();
             }

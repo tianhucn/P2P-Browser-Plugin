@@ -157,6 +157,14 @@ func (this *EnterHandler) Handle() {
 		this.client.ResidualBW = this.message.Ul_bw
 	}
 
+	// log.Printf("---%s", this.client.conn.RemoteAddr().String())
+	// log.Printf("---%s", strings.Split(this.client.conn.RemoteAddr().String(), ":")[0])
+	// theip := this.client.conn.RemoteAddr().String()
+	// argsmap := map[string]interface{}{}
+	// p := NewPingOption()
+	// a, b := p.ping3(theip, argsmap)
+	// log.Printf("*****  %d, %d", a, b)
+
 	response := map[string]interface{}{
 		"action":     "accept",
 		"peer_id":    this.client.PeerId,

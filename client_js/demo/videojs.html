@@ -22,14 +22,14 @@
 <link href="http://vjs.zencdn.net/5.19.2/video-js.css" rel="stylesheet">
 <script src="http://vjs.zencdn.net/5.19.2/video.js"></script>
 <script src="../dist/videojs-contrib-hlsjs.min.js"></script>
-<script src="../dist/hls-peerify.min.js"></script>
-<!--<script src="../hls-peerify.js"></script>-->
+<!--<script src="../dist/hls-peerify.min.js"></script>-->
+<script src="../hls-peerify.js"></script>
 <body>
 <div id="main">
     <video id="player" class="video-js vjs-default-skin" height="360" width="640" controls preload="none">
         <!--<source src="http://wowza.peer5.com/live/smil:bbb_abr.smil/chunklist_w794046364_b2204000.m3u8"-->
                 <!--type="application/x-mpegURL"/>-->
-        <source src="//bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
+        <source src="http://112.90.52.139/hls/pear.m3u8"
                 type="application/x-mpegURL"/>
     </video>
     <table class="table table-hover" style="border: 0; margin: 0">
@@ -85,7 +85,7 @@
 
     var p2pConfig = {
         key: 'free',
-        wsSchedulerAddr: `ws://10.21.108.172:8080/ws`,
+        wsSchedulerAddr: `ws://127.0.0.1:8080/ws`,
         wsSignalerAddr: 'ws://120.78.168.126:8081/ws',
         reportInterval: 30,
 //            defaultUploadBW: 2561241,
