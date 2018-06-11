@@ -234,6 +234,9 @@ func (this *DCOpenHandler) Handle() {
 			parent.(*Client).ResidualBW -= this.message.Stream_rate * int64(this.message.Substreams)
 			log.Warnf("client %v ResidualBW %v Stream_rate %v Substreams %v", parent.(*Client).PeerId, parent.(*Client).ResidualBW, this.message.Stream_rate, this.message.Substreams)
 		}
+
+		this.client.isP2P = true
+
 		//广播节点连接信息
 		if this.client.hub.VisClientNum > 0 {
 			//向所有visclient广播
@@ -324,6 +327,7 @@ type GetParentsHandler struct {
 
 func (this *GetParentsHandler) Handle() {
 	log.Printf("GetParentsHandler Handle")
+	this.client.isActive = true
 	if this.client.hub.ClientNum >= 2 {
 		parents := this.client.hub.GenParents(this.client)
 		var sliceP []interface{}

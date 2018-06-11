@@ -10,4 +10,4 @@ rp_server/vendor
 client_js/node_modules
 client_visual/node_modules
 rp_server/.DS_Store
-rp_server/main.go
+
