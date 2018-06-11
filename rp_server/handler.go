@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -28,11 +29,14 @@ type Handler interface {
 }
 
 type EnterMsg struct {
-	Channel string `json:"channel"`
-	Ul_bw   int64  `json:"ul_bw"`
-	Browser string `json:"browser"`
-	Device  string `json:"device"`
-	Os      string `json:"os"`
+	Channel        string `json:"channel"`
+	Ul_bw          int64  `json:"ul_bw"`
+	Sendtimemiu    int64  `json:"sendtimemiu"`
+	Sendtimesecond int64  `json:"sendtimesecond"`
+	SendtimeMs     int64  `json:"sendtimeMs"`
+	Browser        string `json:"browser"`
+	Device         string `json:"device"`
+	Os             string `json:"os"`
 }
 
 type SignalMsg struct {
@@ -151,10 +155,20 @@ type EnterHandler struct {
 
 func (this *EnterHandler) Handle() {
 	log.Printf("EnterHandler Handle %v", this.message)
-
+	sendt1, sendt2, sendt3 := this.message.Sendtimemiu, this.message.Sendtimesecond, this.message.SendtimeMs
+	gett1, gett2, gett3 := int64(time.Now().Minute()), int64(time.Now().Second()), int64(time.Now().Nanosecond()/1000000)
+	log.Printf("sendtime %d:%d:%d ", sendt1, sendt2, sendt3)
+	log.Printf("gettime: %d:%d:%d", gett1, gett2, gett3)
+	timedelay := (gett1-sendt1)*60*1000 + (gett2-sendt2)*1000 + (gett3 - sendt3)
+	var brandwidth int64
+	if timedelay > 2000 {
+		brandwidth = 0
+	} else {
+		brandwidth = (2000 - timedelay) * 2500
+	}
 	if this.message.Ul_bw != 0 {
-		this.client.UploadBW = this.message.Ul_bw
-		this.client.ResidualBW = this.message.Ul_bw
+		this.client.UploadBW = brandwidth
+		this.client.ResidualBW = brandwidth
 	}
 
 	// log.Printf("---%s", this.client.conn.RemoteAddr().String())

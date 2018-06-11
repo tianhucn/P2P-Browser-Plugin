@@ -170,14 +170,18 @@ export default class P2PSignaler extends EventEmitter {
 
         websocket.onopen = () => {
             console.log('websocket connection opened with channel: ' + this.channel);
+            var time = new Date();
             
             //发送进入频道请求
             let msg = {
                 action: 'enter',
-                //xiaozi: 'dddddddd',
+                sendtimemiu:time.getMinutes(),
+                sendtimesecond:time.getSeconds(),
+                sendtimeMs: time.getMilliseconds(),
                 channel: this.channel,
                 ul_bw: Math.round(this.config.defaultUploadBW)
             };
+
 
             if (info) {
                 msg = Object.assign(msg, info);
