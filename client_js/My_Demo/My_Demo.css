@@ -21,6 +21,7 @@
     /*height: 0; !*容器高度是由padding来控制，盒模型原理告诉你一切*!*/
     width: 100%;
     padding-top: 50%;
+    background-color: black;
 }
 
 .aspectration > * {
@@ -37,13 +38,11 @@
     border: 1px solid lightgray;
 }
 
-#node-table{
-    overflow-y: scroll;
+#node-table {
     height: 200px;
 }
 
 .cpm-downloadresult {
-    border: 1px solid lightgray;
     height: 660px;
     overflow-y: auto;
 }
@@ -54,4 +53,38 @@ footer {
     color: #eee;
     font-size: 11px;
     padding: 20px;
+}
+
+.my-header{
+    background: #222222;
+    color: #ba9444;
+    padding: 20px;
+    padding-left: 100px;
+    padding-top: 60px;
+}
+
+.cube-p2p {
+    background-color: deepskyblue;
+    color: white;
+    width: 40px;
+    text-align: center;
+}
+
+.cube-cdn {
+    background-color: orangered;
+    color: white;
+    width: 40px;
+    text-align: center;
+}
+
+.cube-other {
+    background-color: #2c2c2c;
+    color: white;
+    width: 40px;
+    text-align: center;
+}
+
+
+#cube-div {
+    height: 460px;
 }

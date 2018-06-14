@@ -9,6 +9,9 @@
     <script type="text/javascript" src="vis.js"></script>
     <link href="vis-network.min.css" rel="stylesheet" type="text/css"/>
 
+    <script src="https://cdn.bootcss.com/react/15.4.2/react.min.js"></script>
+    <script src="https://cdn.bootcss.com/react/15.4.2/react-dom.min.js"></script>
+    <script src="https://cdn.bootcss.com/babel-standalone/6.22.1/babel.min.js"></script>
 </head>
 
 
@@ -21,36 +24,33 @@
 <script src="../dist/hls-peerify.min.js"></script>
 
 <body>
+<header class="my-header">
+    <h1>Online P2P Video Player
+    </h1>
+</header>
 
 <div class="jumbotron">
 
     <div class="container">
-        <div class="page-header">
-            <h1>梨享
-                <small>视频在线播放Demo</small>
-            </h1>
-        </div>
         <div class="aspectration">
             <video id="video" controls></video>
-
         </div>
         <div style="height:20px"></div>
         <div class="input-group input-group-lg">
-            <span class="input-group-addon">视频URL</span>
+            <span class="input-group-addon">Video URL</span>
             <input type="text" class="form-control" id="videoURL" placeholder="请在此输入视频链接"
                    aria-describedby="basic-addon2" value="https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8">
 
             <span class="input-group-btn">
-            <button class="btn btn-default" type="button" onclick="resetURL()">重置</button>
-            <button class="btn btn-primary" type="button" onclick="playVideo()">播放</button>
+            <button class="btn btn-default" type="button" onclick="resetURL()">Reset</button>
+            <button class="btn btn-primary" type="button" onclick="playVideo()">Play</button>
             </span>
         </div>
     </div>
 </div>
 
-
 <div class="container">
-    <h1>网络信息</h1>
+    <h1>Network Information</h1>
     <div class="col-md-6">
         <div class="row">
             <div class="cpm-downloadresult">
@@ -72,7 +72,19 @@
     </div>
 
     <div class="col-md-6">
-        <div id="mynetwork"></div>
+        <!--<div id="mynetwork"></div>-->
+        <div class="container-fluid">
+            <p style="font-size: 22px; ">P2P ratio: <span id="p2pRatio"></span></p>
+            <hr/>
+            <p>P2P: <span><button class="btn btn-default cube-p2p"></button></span>
+                CDN: <span><button class="btn btn-default cube-cdn"></button></span>
+            </p>
+        </div>
+
+        <div class="container-fluid">
+            <div class="row" id="cube-div">
+            </div>
+        </div>
         <div id="node-table">
             <table class="table table-hover">
                 <thead>
@@ -96,6 +108,7 @@
 
     </div>
 </footer>
+
 <!--<script src="../dist/test-bundle.js"></script>-->
 <script src="My_Demo.js"></script>
 </body>
