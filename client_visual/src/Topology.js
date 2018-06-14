@@ -1,7 +1,7 @@
 /**
  * Created by xieting on 2018/2/28.
  */
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Graph from './component/Graph';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
@@ -9,17 +9,24 @@ class Topology extends Component {
     constructor() {
         super();
         this.nodeMap = new Map();             //id --> totalStreams
+        this._setupStats();                   //周期性获取统计信息
+        this.state = {};
+        this.myurl = 'https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8'
+        this.topo(this.myurl);
+    }
+
+    topo(url1) {
+        this.nodeMap = new Map();             //id --> totalStreams
 
         this._setupStats();                   //周期性获取统计信息
 
         this.state = {
             totalStreams: 0,
             graph: {
-                nodes:[],
+                nodes: [],
                 edges: []
             },
             options: {
-                physics: false,
                 layout: {
                     hierarchical: false
                 },
@@ -32,8 +39,8 @@ class Topology extends Component {
                 },
             },
             events: {
-                select: function(event) {
-                    var { nodes, edges } = event;
+                select: function (event) {
+                    var {nodes, edges} = event;
                 }
             },
             stats: {
@@ -42,14 +49,15 @@ class Topology extends Component {
                 source: 0,
                 p2pBase: 0,
                 sourceBase: 0,
-        }
+            },
+            p2pratio: 0,
+            nodeinformation: {},
         };
         const wsOptions = {
             maxRetries: 5,
-            minReconnectionDelay: 3*1000
-
+            minReconnectionDelay: 3 * 1000
         };
-        const url =`ws://127.0.0.1:8080/vis?room=${encodeURIComponent('https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8')}`;
+        const url = `ws://120.77.252.69:8080/vis?room=${encodeURIComponent(url1)}`;
         //const url =`ws://127.0.0.1:8080/vis?room=${encodeURIComponent('http://112.90.52.139/hls/pear.m3u8')}`;
         // const url =`ws://127.0.0.1:8080/vis?room=${encodeURIComponent('https://moeplayer.b0.upaiyun.com/dplayer/hls/hikarunara.m3u8')}`;
         let websocket = new ReconnectingWebSocket(url, undefined, wsOptions);
@@ -64,36 +72,32 @@ class Topology extends Component {
         websocket.onmessage = (e) => {
             console.log(`websocket.onmessage ${e.data}`);
             const msg = JSON.parse(e.data);
+
             switch (msg.action) {
-                case 'statistics':
-                {
+                case 'statistics': {
                     this._handleStat(msg);
                     break
                 }
-                case 'topology':
-                {
+                case 'topology': {
                     let nodes = msg.nodes;
+                    this.setState({p2pratio: msg.p2pratio});
                     this.state.totalStreams = msg.totalstreams;
                     this._initGraph(nodes);
                     break
                 }
-                case 'join':
-                {
+                case 'join': {
                     this._handleJoin(msg.node);
                     break
                 }
-                case 'leave':
-                {
+                case 'leave': {
                     this._handleLeave(msg.node);
                     break
                 }
-                case 'connect':
-                {
+                case 'connect': {
                     this._handleConn(msg.edge);
                     break
                 }
-                case 'disconnect':
-                {
+                case 'disconnect': {
                     this._handleDisconn(msg.edge);
                     break
                 }
@@ -101,6 +105,18 @@ class Topology extends Component {
             }
         };
     }
+
+    changeUrl(e) {
+        // this.state.stats.url = e.target.value;
+        // this.topo(e.target.value)
+        this.myurl = e.target.value;
+    }
+
+    confirm() {
+        console.log(this.myurl);
+        this.topo(this.myurl);
+    }
+
     _handleStat(msg) {
         let result = msg.result;
         if (!this.state.stats.normalized) {
@@ -117,7 +133,7 @@ class Topology extends Component {
         let newStats = Object.assign(this.state.stats, {
             p2p: result.p2p,
             source: result.source,
-        })
+        });
         this.setState({
             stats: newStats
         })
@@ -141,7 +157,10 @@ class Topology extends Component {
         let info = node.info;
         // let label = `${info.country!='0'?info.country:''}${info.province!='0'?info.province:''}${info.city!='0'?info.city:''}${info.ISP!='0'?info.ISP:''}${node.id}`;
         //let label = `${node.id.substr(0,2)}(${Math.round(info.ul_bw/8/1024)}KB/s)`;
-        let label = `${node.id.substr(0,4)}[${info.IP}](${Math.round(info.ul_bw/8/1024)}KB/s)`;
+        let label = `${node.id.substr(0, 4)}`;
+        // this.state.nodeinformation [node.id] = [info.ISP, info.Province, info.City];
+        console.log([info.ISP, info.Province, info.City]);
+        this.state.nodeinformation [node.id] = [info.ISP, info.Province, info.City, info.IP, Math.round(info.ul_bw / 8 / 1024) + "KB/s", info.UploadBW];
         this.setState({
             graph: {
                 nodes: [
@@ -200,7 +219,7 @@ class Topology extends Component {
     _handleDisconn(edge) {
         let newEdges = [];
         for (let e of this.state.graph.edges) {
-            if (e.from === edge.from && e.to === edge.to) continue
+            if (e.from === edge.from && e.to === edge.to) continue;
             newEdges.push(e);
         }
         this.setState({
@@ -212,24 +231,28 @@ class Topology extends Component {
     }
 
     _initGraph(newNodes) {
-        let nodes = [{id: 0, label: 'Server'}];
+        let nodes = [{id: 0, label: 'Server', color: 'rgb(255,168,7)'}];
+        this.state.nodeinformation [0] = ["Server"];
         let edges = [];
         for (let node of newNodes) {
             let info = node.info;
             // let label = `${info.country!='0'?info.country:''}${info.province!='0'?info.province:''}${info.city!='0'?info.city:''}${info.ISP!='0'?info.ISP:''}${node.id}`;
             //let label = `${node.id.substr(0,2)}(${Math.round(info.ul_bw/8/1024)}KB/s)`;
-            let label = `${node.id.substr(0,4)}[${info.IP}](${Math.round(info.ul_bw/8/1024)}KB/s)`;
+            // let label = `${node.id.substr(0, 4)}[${info.IP}](${Math.round(info.ul_bw / 8 / 1024)}KB/s)`;
+            let label = `${node.id.substr(0, 4)}`;
+            // console.log(info.ISP);
             nodes.push({
                 id: node.id,
                 label: label
-            })
-
+            });
+            // console.log(this.state);
+            this.state.nodeinformation [node.id] = [info.ISP, info.province, info.city, info.IP, Math.round(info.ul_bw / 8 / 1024) + "KB/s", info.UploadBW];
             if (node.parents.length == 0) {
                 edges.push({
                     from: 0,
                     to: node.id,
                     length: Math.floor(Math.random() * (550 - 20 + 1)) + 120,
-                    label: this.state.totalStreams +''
+                    label: this.state.totalStreams + ''
                 })
             } else {
                 let streamCount = 0;
@@ -238,7 +261,7 @@ class Topology extends Component {
                         from: parent.id,
                         to: node.id,
                         label: parent.substreams + ''
-                    })
+                    });
                     streamCount += parent.substreams;
                 }
                 if (streamCount < this.state.totalStreams) {
@@ -246,7 +269,7 @@ class Topology extends Component {
                         from: 0,
                         to: node.id,
                         length: Math.floor(Math.random() * (550 - 20 + 1)) + 120,
-                        label: this.state.totalStreams - streamCount +''
+                        label: this.state.totalStreams - streamCount + ''
                     })
                 }
                 this.nodeMap[node.id] = streamCount;
@@ -279,54 +302,92 @@ class Topology extends Component {
             let msg = {
                 action: "get_stats"
             };
-            this.websocket.send(JSON.stringify(msg));
+            if (this.websocket.readyState===1) {
+                this.websocket.send(JSON.stringify(msg));
+            }else{
+                console.log("没有成功连接到websocket")
+            }
 
         }, 30000)
     }
 
     render() {
+        let inputstyle = {
+            padding: '5px',
+            border: '1px solid #E7EAEC',
+            width: '500px',
+            height: '20px',
+            background: '#FAFAFB',
+            borderRadius: '5px',
+            color: '#474748',
+            margin: '3px'
+        };
+        let buttonstyle = {
+            padding: '5px',
+            height: '30px',
+            borderRadius: '5px',
+            color: '#fdfdff',
+            margin: '3px',
+            border: '1px solid #7bb4ff',
+            background: '#397dcc',
+            hover: {
+                background: '#7bb4ff'
+            }
+        };
 
-        // var graph = {
-        //     nodes: [
-        //         {id: 1, label: 'Node 1'},
-        //         {id: 2, label: 'Node 2'},
-        //         {id: 3, label: 'Node 3'},
-        //         {id: 4, label: 'Node 4'},
-        //         {id: 5, label: 'Node 5'}
-        //     ],
-        //     edges: [
-        //         {from: 1, to: 2},
-        //         {from: 1, to: 3},
-        //         {from: 2, to: 4},
-        //         {from: 2, to: 5}
-        //     ]
-        // };
-        //
-        // var options = {
-        //     layout: {
-        //         hierarchical: true
-        //     },
-        //     edges: {
-        //         color: "#000000"
-        //     }
-        // };
-        //
-        // var events = {
-        //     select: function(event) {
-        //         var { nodes, edges } = event;
-        //     }
-        // }
-
+        let mystyle = {
+            padding: '6px',
+            color: '#474748',
+            border: '1px solid #E7EAEC',
+            background: 'white',
+            borderRadius: '5px',
+            fontWeight: "600"
+        };
+        let headstyle = {
+            background: '#222222',
+            color: '#ba9444',
+            padding: '20px',
+            paddingLeft: '120px',
+            textAlign: 'left'
+        };
+        let footstyle = {
+            marginTop: '60px',
+        background: '#333',
+        color: '#eee',
+        fontSize: '11px',
+        padding: '20px',
+        };
         let stats = this.state.stats;
-        let p2p = stats.p2p-stats.p2pBase;
-        let source = stats.source-stats.sourceBase;
+        let p2p = stats.p2p - stats.p2pBase;
+        let source = stats.source - stats.sourceBase;
+        let p2pratio = this.state.p2pratio.toFixed(2);
+        // let nodeinfo = this.nodeinformation;
+        // let url = stats.url;
         return (
+
             <div>
-                <Graph style={{ height: "640px" }} graph={this.state.graph} options={this.state.options} events={this.state.events} />
-                <p>p2p: {p2p}KB  source: {source}KB </p>
+                <header style={headstyle}>
+                    <h1>P2P Topology Visual</h1>
+                </header>
+                <Graph style={{height: "640px"}} graph={this.state.graph} options={this.state.options}
+                       events={this.state.events} nodeinfo={this.state.nodeinformation}/>
+                <p><span style={mystyle}>p2p: {p2p}KB    source: {source}KB    P2Pratio: {p2pratio}%</span></p>
+                <div>
+                    <span style={mystyle}>视频URL</span>
+                    <input type="text" id="videoURL" style={inputstyle} placeholder="请在此输入视频链接"
+                           defaultValue={this.myurl} onChange={(e) => this.changeUrl(e)}/>
+                    <button className="btn btn-primary" style={buttonstyle} type="button"
+                            onClick={() => this.confirm()}>确定
+                    </button>
+                </div>
+                <footer style={footstyle}>
+                    <p>Project of Software Engineering, SUSTech. </p>
+                    <p>Pear Limited.</p>
+                </footer>
             </div>
         );
     }
 }
+
 
 export default Topology;
