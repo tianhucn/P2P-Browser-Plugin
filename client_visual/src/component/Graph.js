@@ -155,7 +155,7 @@ class Graph extends Component {
 
                 let infolist = this.props.nodeinfo[params.nodes];
                 console.log(infolist);
-                let isp = "", province = "", city = "", ipaddr = "", netspeed = "", uploadbw="";
+                let isp = "", province = "", city = "", ipaddr = "", netspeed = "", uploadbw = "";
                 if (infolist[0] === "Server") {
                     isp = "<span style=" + mystyle + "> <b>Server</b></span>"
                 }
@@ -175,9 +175,9 @@ class Graph extends Component {
                     netspeed = "<span style=" + mystyle + "> <b>速度:</b> " + infolist[4] + "</span>"
                 }
                 if (infolist[4] !== undefined) {
-                    netspeed = "<span style=" + mystyle + "> <b>上行带宽:</b> " + infolist[5] + "</span>"
+                    uploadbw = "<span style=" + mystyle + "> <b>上行带宽:</b> " + infolist[5] + "</span>"
                 }
-                this.setState({info: isp + province + city + ipaddr});
+                this.setState({info: isp + province + city + ipaddr + uploadbw});
             }
         }.bind(this));
 
@@ -227,7 +227,6 @@ class Graph extends Component {
         style.marginBottom = '50px';
         style.background = '#FAFAFB';
         style.borderRadius = '8px';
-        console.log("render");
         let backgroundstyle = {
             paddingTop: '30px',
             paddingBottom: '30px',
