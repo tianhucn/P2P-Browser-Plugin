@@ -52,6 +52,7 @@ type StatMsg struct {
 	P2p    uint32           `json:"p2p"`
 	Ul_srs map[string]int64 `json:"ul_srs"`
 	Plr    float32          `json:"plr"`
+	bw     int64            `json:"bw"`
 }
 
 type AdoptMsg struct {
@@ -354,6 +355,26 @@ func (this *GetParentsHandler) Handle() {
 		if !c.(*Client).isActive {
 			this.client.hub.clients.Delete(c.(*Client).PeerId)
 			c.(*Client).hub.ClientNum--
+
+			//广播节点离开信息
+			if this.client.hub.VisClientNum > 0 {
+				//向所有visclient广播
+				resp := map[string]interface{}{
+					"action": "leave",
+					"node": map[string]interface{}{
+						"id": c.(*Client).PeerId,
+					},
+				}
+				b, err := json.Marshal(resp)
+				if err != nil {
+					panic(err)
+				}
+				log.Printf("broadcast to visclients: %s", string(b))
+				//this.broadcast <- b
+				for visclient := range this.client.hub.visclients {
+					visclient.send <- b
+				}
+			}
 		}
 		return true
 	})
@@ -369,6 +390,9 @@ func (this *StatHandler) Handle() {
 	this.client.Stat = this.message
 	this.client.hub.Stats.CDN += uint64(this.message.Source)
 	this.client.hub.Stats.P2p += uint64(this.message.P2p)
+	log.Printf("%s", this.message)
+	log.Printf("-----%d", this.message.bw)
+
 	//this.client.ResidualBW = this.client.getResidualBW()
 	//广播节点连接信息
 	//if this.client.hub.VisClientNum > 0 {
