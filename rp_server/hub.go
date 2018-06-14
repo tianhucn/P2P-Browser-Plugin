@@ -167,7 +167,9 @@ func (this *Hub) doUnregister(client *Client) {
 			this.fastMesh.DeleteEdge(v, &client.treeNode)
 			parent, ok := this.clients.Load(v.id)
 			if ok {
-				parent.(*Client).ResidualBW += client.subStreamRate * int64(client.streamMap[v.id])
+
+				usebw := parent.(*Client).oldUPBW - parent.(*Client).ResidualBW
+				parent.(*Client).ResidualBW = parent.(*Client).UploadBW - usebw + client.subStreamRate*int64(client.streamMap[v.id])
 				log.Warnf("client %v ResidualBW %v", parent.(*Client).PeerId, parent.(*Client).ResidualBW)
 			}
 		}

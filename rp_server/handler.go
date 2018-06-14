@@ -240,7 +240,9 @@ func (this *DCOpenHandler) Handle() {
 		parent, ok := this.client.hub.clients.Load(s[1])
 		if ok {
 			this.client.hub.fastMesh.AddEdge(&parent.(*Client).treeNode, &child.(*Client).treeNode)
-			parent.(*Client).ResidualBW -= this.message.Stream_rate * int64(this.message.Substreams)
+			usebw := parent.(*Client).oldUPBW - parent.(*Client).ResidualBW
+			parent.(*Client).ResidualBW = parent.(*Client).UploadBW - usebw - this.message.Stream_rate*int64(this.message.Substreams)
+
 			log.Warnf("client %v ResidualBW %v Stream_rate %v Substreams %v", parent.(*Client).PeerId, parent.(*Client).ResidualBW, this.message.Stream_rate, this.message.Substreams)
 		}
 
@@ -287,7 +289,8 @@ func (this *DCCloseHandler) Handle() {
 			//记录子流信息
 			child.(*Client).streamMap[s[1]] = 0
 			this.client.hub.fastMesh.DeleteEdge(&parent.(*Client).treeNode, &child.(*Client).treeNode)
-			parent.(*Client).ResidualBW += this.message.Stream_rate * int64(this.message.Substreams)
+			usebw := parent.(*Client).oldUPBW - parent.(*Client).ResidualBW
+			parent.(*Client).ResidualBW = parent.(*Client).UploadBW - usebw + this.message.Stream_rate*int64(this.message.Substreams)
 			log.Warnf("client %v ResidualBW %v", parent.(*Client).PeerId, parent.(*Client).ResidualBW)
 		}
 		//广播节点断开连接信息
@@ -388,7 +391,10 @@ type StatHandler struct {
 func (this *StatHandler) Handle() {
 	log.Printf("StatHandler Handle")
 	this.client.Stat = this.message
+	this.client.oldUPBW = this.client.UploadBW
 	this.client.UploadBW = this.message.bw
+	usebw := this.client.oldUPBW - this.client.ResidualBW
+	this.client.ResidualBW = this.client.UploadBW - usebw
 	this.client.hub.Stats.CDN += uint64(this.message.Source)
 	this.client.hub.Stats.P2p += uint64(this.message.P2p)
 	//this.client.ResidualBW = this.client.getResidualBW()

@@ -93,6 +93,8 @@ func (this *GETTOPOHandler) Handle() {
 				UploadBW: client.UploadBW,
 			},
 		}
+		log.Printf("****************************")
+		log.Printf("--node-----%d", node.Info.UploadBW)
 		allnode = allnode + 1
 		if client.isP2P {
 			p2pnode = p2pnode + 1

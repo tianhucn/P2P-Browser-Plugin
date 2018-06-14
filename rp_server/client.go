@@ -62,6 +62,7 @@ type Client struct {
 
 	PeerId   string //唯一标识
 	UploadBW int64  //单位bps
+	oldUPBW  int64  //旧的带宽
 	Level    int    //节点在网络结构中的层级
 
 	IpInfo IpInfo
@@ -201,6 +202,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		PeerId:     UniqueId(),
 		UploadBW:   hub.P2pConfig.Live.DefaultUploadBW, //默认值，应该由节点上报
 		ResidualBW: hub.P2pConfig.Live.DefaultUploadBW,
+		oldUPBW:    hub.P2pConfig.Live.DefaultUploadBW,
 		streamMap:  make(map[string]int),
 		isActive:   false,
 		isP2P:      false,
