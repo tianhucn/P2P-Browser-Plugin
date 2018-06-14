@@ -157,10 +157,10 @@ class Topology extends Component {
         let info = node.info;
         // let label = `${info.country!='0'?info.country:''}${info.province!='0'?info.province:''}${info.city!='0'?info.city:''}${info.ISP!='0'?info.ISP:''}${node.id}`;
         //let label = `${node.id.substr(0,2)}(${Math.round(info.ul_bw/8/1024)}KB/s)`;
-        let label = `${node.id.substr(0, 4)}`;
+        let label = `${node.id.substr(0, 4)}(${Math.round(info.ul_bw/8/1024)}KB/s)`;
         // this.state.nodeinformation [node.id] = [info.ISP, info.Province, info.City];
-        console.log([info.ISP, info.Province, info.City]);
-        this.state.nodeinformation [node.id] = [info.ISP, info.Province, info.City, info.IP, Math.round(info.ul_bw / 8 / 1024) + "KB/s", info.UploadBW];
+        // console.log([info.ISP, info.Province, info.City]);
+        this.state.nodeinformation [node.id] = [info.ISP, info.Province, info.City, info.IP, Math.round(info.ul_bw) + "KB/s", info.UploadBW];
         this.setState({
             graph: {
                 nodes: [
@@ -239,14 +239,14 @@ class Topology extends Component {
             // let label = `${info.country!='0'?info.country:''}${info.province!='0'?info.province:''}${info.city!='0'?info.city:''}${info.ISP!='0'?info.ISP:''}${node.id}`;
             //let label = `${node.id.substr(0,2)}(${Math.round(info.ul_bw/8/1024)}KB/s)`;
             // let label = `${node.id.substr(0, 4)}[${info.IP}](${Math.round(info.ul_bw / 8 / 1024)}KB/s)`;
-            let label = `${node.id.substr(0, 4)}`;
+            let label = `${node.id.substr(0, 4)}(${Math.round(info.ul_bw/8/1024)}KB/s)`;
             // console.log(info.ISP);
             nodes.push({
                 id: node.id,
                 label: label
             });
             // console.log(this.state);
-            this.state.nodeinformation [node.id] = [info.ISP, info.province, info.city, info.IP, Math.round(info.ul_bw / 8 / 1024) + "KB/s", info.UploadBW];
+            this.state.nodeinformation [node.id] = [info.ISP, info.province, info.city, info.IP, Math.round(info.ul_bw) + "KB/s", info.UploadBW];
             if (node.parents.length == 0) {
                 edges.push({
                     from: 0,
