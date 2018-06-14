@@ -44278,7 +44278,7 @@ var NodesHandler = function () {
 
     /**
      * Returns the positions of the nodes.
-     * @param {Array.<Node.id>|String} [ids]  --> optional, can be array of cubeIds, can be string
+     * @param {Array.<Node.id>|String} [ids]  --> optional, can be array of nodeIds, can be string
      * @returns {{}}
      */
 
