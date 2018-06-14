@@ -9,8 +9,8 @@
 <script src="http://vjs.zencdn.net/5.19.2/video.js"></script>
 <script src="../dist/videojs-contrib-hlsjs.min.js"></script>
 <script src="../dist/hls-peerify.min.js"></script>-->
-
 <script src="../hls-peerify.js"></script>
+<!--<script src="../node_modules/simple-peer/index.js"></script>-->
 <body>
 <div id="main">
     <video id="video" width="320" height="240" controls></video>
@@ -32,7 +32,8 @@
     </div>
 </div>
 
-<script>
+<script type="module">
+//    import EwmaBandWidthEstimator from "../node_modules/hls.js/src/utils/ewma-bandwidth-estimator";
 
     var cpm = {
         downloadresult: document.querySelectorAll('.cpm-downloadresult')[0],
@@ -57,15 +58,13 @@
 
         var hlsjsConfig = {
 
-//            maxBufferSize: 0,
-//            maxBufferLength: 30,
             liveSyncDuration: 60,
             fragLoadingTimeOut: 4000,              // used by fragment-loader
         };
         var p2pConfig = {
             key: 'free',
-            //wsSchedulerAddr: `ws://120.77.252.69:8080/ws`,
-            wsSchedulerAddr: `ws://127.0.0.1:8080/ws`,
+            wsSchedulerAddr: `ws://120.77.252.69:8080/ws`,
+//            wsSchedulerAddr: `ws://127.0.0.1:8080/ws`,
             wsSignalerAddr: 'ws://120.78.168.126:8081/ws',
             //wsSignalerAddr: 'ws://127.0.0.1:8081/ws',
             reportInterval: 30,
@@ -82,6 +81,9 @@
 
         var p2pPlugin = new HlsPeerify(hls, p2pConfig);
 
+//        const est = new EwmaBandWidthEstimator(hls, 0, 1000, 500);
+
+
 //        hls.loadSource('https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8');
 //        hls.loadSource('https://video-dev.github.io/streams/test_001/stream.m3u8?a=123');
 //        hls.loadSource('https://moeplayer.b0.upaiyun.com/dplayer/hls/hikarunara.m3u8');
@@ -96,9 +98,11 @@
 
         hls.on(Hls.Events.FRAG_LOADED, (id, data) => {
             var frag = data.frag;
+            console.log(data);
 //            console.warn(`sn ${frag.sn} relurl ${frag.relurl} level ${frag.level} downloaded ${frag.loaded} source ${frag.loadByXhr?'CDN':'P2P'}`);
             var source = frag.loadByXhr?'CDN':'P2P';
             addToTable(frag.sn, frag.relurl, frag.level, frag.loaded, source);
+            p2pPlugin.updateBW(data.stats.bwEstimate);
         });
 
         hls.on(Hls.Events.ERROR, function (event, data) {
@@ -106,16 +110,7 @@
             var errorDetails = data.details;
             var errorFatal = data.fatal;
             console.warn('error details:'+errorDetails);
-//      switch(data.details) {
-//        case hls.ErrorDetails.FRAG_LOAD_ERROR:
-//          // ....
-//          break;
-//        default:
-//          break;
-//      }
         });
-
-
     }
 </script>
 </body>

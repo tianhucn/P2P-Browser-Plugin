@@ -31,7 +31,8 @@ class HlsPeerify extends EventEmitter {
         this.config = Object.assign({}, defaultP2PConfig, p2pConfig);
 
         this.hlsjs = hlsjs;
-        this.p2pEnabled = this.config.disableP2P === false ? false : true;                                      //默认开启P2P
+        this.p2pEnabled = this.config.disableP2P === false ? false : true;//默认开启P2P
+        this.bw = 2557670/3*5;
 
         hlsjs.config.currLoaded = hlsjs.config.currPlay = 0;
 
@@ -175,6 +176,10 @@ class HlsPeerify extends EventEmitter {
         }
     }
 
+    updateBW(bw) {
+        this.bw = bw;
+    }
+
     _statisticsReport() {
         // let ul_srs = {};
         // let substreams = this.signaler.scheduler.substreams;
@@ -193,7 +198,8 @@ class HlsPeerify extends EventEmitter {
                 source: Math.round(this.cdnDownloaded/1024),                  //单位KB
                 p2p: Math.round(this.p2pDownloaded/1024),
                 // ul_srs: ul_srs,
-                plr: 0                                                        //todo
+                plr: 0,   //todo
+                bw: this.bw
             };
             this.signaler.send(msg);
             this.cdnDownloaded = this.p2pDownloaded = 0;                   //上报的是增量部分
