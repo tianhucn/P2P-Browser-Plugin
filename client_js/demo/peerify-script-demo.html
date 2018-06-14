@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>hls-peerify</title>
+</head>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<!--<script src="../dist/hls-peerify.js"></script>
+<script src="http://vjs.zencdn.net/5.19.2/video.js"></script>
+<script src="../dist/videojs-contrib-hlsjs.min.js"></script>
+<script src="../dist/hls-peerify.min.js"></script>-->
+<script src="../hls-peerify.js"></script>
+<!--<script src="../node_modules/simple-peer/index.js"></script>-->
+<body>
+<div id="main">
+    <video id="video" width="320" height="240" controls></video>
+    <div class="sr-only cpm-downloadresult"  style="height:360px; overflow:scroll;">
+
+        <!--<p class="help-block">Downloading...</p>-->
+        <table id="table-body" class="table table-hover">
+            <thead>
+            <tr style="text-align: center">
+                <td>sn</td>
+                <td>url</td>
+                <td>level</td>
+                <td>size</td>
+                <td>source</td>
+            </tr>
+            </thead>
+            <tbody ></tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+//    import EwmaBandWidthEstimator from "../node_modules/hls.js/src/utils/ewma-bandwidth-estimator";
+
+    var cpm = {
+        downloadresult: document.querySelectorAll('.cpm-downloadresult')[0],
+        table: document.querySelectorAll('#table-body tbody')[0]
+    };
+    var  addToTable = function (sn, url, level, downloaded, source) {
+        cpm.table.innerHTML +=
+            `<tr style="text-align: center">
+                    <td>${sn}</td>
+                    <td>${url}</td>
+                    <td>${level}</td>
+                    <td>${downloaded}B</td>
+                    <td>${source}</td>
+                </tr>`
+    };
+
+    console.log(JSON.stringify(HlsPeerify.uaParserResult, null, 2));
+    console.log('hls.js version: ' + Hls.version);
+    console.log('p2p plugin version: ' + HlsPeerify.version);
+    if(Hls.isSupported()) {
+        var video = document.getElementById('video');
+
+        var hlsjsConfig = {
+
+            liveSyncDuration: 60,
+            fragLoadingTimeOut: 4000,              // used by fragment-loader
+        };
+        var p2pConfig = {
+            key: 'free',
+            wsSchedulerAddr: `ws://120.77.252.69:8080/ws`,
+//            wsSchedulerAddr: `ws://127.0.0.1:8080/ws`,
+            wsSignalerAddr: 'ws://211.159.220.166:8081/ws',
+            //wsSignalerAddr: 'ws://127.0.0.1:8081/ws',
+            reportInterval: 30,
+//            defaultUploadBW: 2561241,
+//            defaultUploadBW: 2561241 + 100,
+//            defaultUploadBW: 853290*3+1000,
+            defaultUploadBW: 2557670/3*5,
+//            transitionEnabled: true,
+            transitionEnabled: false,
+            transitionCheckInterval: 90
+        };
+
+        var hls = new Hls(hlsjsConfig);
+
+        var p2pPlugin = new HlsPeerify(hls, p2pConfig);
+
+//        const est = new EwmaBandWidthEstimator(hls, 0, 1000, 500);
+
+        hls.loadSource('https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8');
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED,function(event, data) {
+            hls.loadLevel = 0;
+            video.play();
+        });
+
+        hls.on(Hls.Events.FRAG_LOADED, (id, data) => {
+            console.log(JSON.stringify(data.stats));
+            var frag = data.frag;
+            console.log(data);
+//            console.warn(`sn ${frag.sn} relurl ${frag.relurl} level ${frag.level} downloaded ${frag.loaded} source ${frag.loadByXhr?'CDN':'P2P'}`);
+            var source = frag.loadByXhr?'CDN':'P2P';
+            addToTable(frag.sn, frag.relurl, frag.level, frag.loaded, source);
+            p2pPlugin.updateBW(data.stats.bwEstimate);
+
+            console.log(data.stats);
+            console.log("-----------------------------------");
+            var m = -1;
+            setTimeout(function () {
+                m = data.stats.bwEstimate;
+                console.log(m);
+                p2pPlugin.updateBW(m);
+            }, 50);
+            //console.log(m)
+
+//            let promise = new Promise((resolve, reject) => {
+//                let s = data.stats.bwEstimate;
+//                if (typeof s !== "undefined")
+//                    resolve(s);
+//                else
+//                    reject("failed!!!!!!!!!!!!!!!")
+//            });
+//            promise.then((msg) => {
+//               console.log(JSON.stringify(msg));
+//            }, (err) => {
+//                console.log(err)
+//            });
+
+        });
+
+        hls.on(Hls.Events.ERROR, function (event, data) {
+            var errorType = data.type;
+            var errorDetails = data.details;
+            var errorFatal = data.fatal;
+            console.warn('error details:'+errorDetails);
+        });
+    }
+</script>
+</body>
+</html>

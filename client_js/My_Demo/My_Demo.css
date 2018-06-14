@@ -1,0 +1,102 @@
+#videocontainer {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1000px;
+    padding-top: 75%;
+}
+
+#video {
+    width: 100%;
+    height: 100%;
+}
+
+#main {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1000px;
+}
+
+
+
+.aspectration {
+    position: relative; /*因为容器所有子元素需要绝对定位*/
+    /*height: 0; !*容器高度是由padding来控制，盒模型原理告诉你一切*!*/
+    width: 100%;
+    padding-top: 50%;
+    background-color: black;
+}
+
+.aspectration > * {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#mynetwork {
+    width: 100%;
+    height: 460px;
+    border: 1px solid lightgray;
+}
+
+#node-table {
+    height: 200px;
+}
+
+.cpm-downloadresult {
+    height: 660px;
+    overflow-y: auto;
+}
+
+footer {
+    margin-top: 60px;
+    background: #333;
+    color: #eee;
+    font-size: 11px;
+    padding: 20px;
+    box-shadow: 0 -10px 10px #c8c8c8;
+}
+
+.my-header{
+    padding: 20px;
+    font-family: Verdana, serif;
+    background: #343434;
+    color: #ba9444;
+    font-size: 28px;
+    box-shadow: inset 0 -10px 10px #1c1c1c;
+}
+
+/*.net-info{*/
+    /*background-color: white;*/
+/*}*/
+
+/*.info-bg{*/
+    /*background-image: linear-gradient(to top, #fad0c4 0%, #ffd1ff 100%);*/
+/*}*/
+
+.cube-p2p {
+    background-color: deepskyblue;
+    color: white;
+    width: 40px;
+    text-align: center;
+}
+
+.cube-cdn {
+    background-color: orangered;
+    color: white;
+    width: 40px;
+    text-align: center;
+}
+
+.cube-other {
+    background-color: #2c2c2c;
+    color: white;
+    width: 40px;
+    text-align: center;
+}
+
+
+#cube-div {
+    height: 460px;
+}
