@@ -11,3 +11,7 @@ client_js/node_modules
 client_visual/node_modules
 rp_server/.DS_Store
 
+*.iml
+*.json
+*.map
+*.map
