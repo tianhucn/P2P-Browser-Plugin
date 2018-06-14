@@ -1,34 +1,51 @@
+// import * as ReactDOM from "element-react";
 
 var video;
 // var hlsjsConfig;
 // var p2pConfig;
 // var hls;
 // var p2pPlugin;
-
-var network, nodes, edges;
-var nodeIds;
-var nodeInformation;
+var p2pcount=0;
+var cdncount=0;
+var cubeIds;
+var cubeInformation;
 
 var cpm = {
     downloadresult: document.querySelectorAll('.cpm-downloadresult')[0],
     table: document.querySelectorAll('#table-body tbody')[0]
 };
 var addToTable = function (sn, url, level, downloaded, source) {
-    console.log(cpm.table);
-    console.log("sagasdg");
+    var cubediv = document.getElementById("cube-div");
     cpm.table.innerHTML +=
         `<tr>
+                    <td>${sn}</td>
+                    <td>${url}</td>  
+                    <td>${level}</td>
+                    <td>${downloaded}</td>
+                    <td>${source}</td>
+                </tr>`;
+    if (!array_contain(cubeIds, sn)) {
+        var cube_class;
+        if (source === "P2P") {
+            cube_class = "cube-p2p";
+            p2pcount++;
+        } else if (source === "CDN") {
+            cube_class = "cube-cdn";
+            cdncount++;
+        } else {
+            cube_class = "cube-other";
+        }
+
+        cubeIds.push(sn);
+        cubeInformation [sn] = `<tr>
                     <td>${sn}</td>
                     <td>${url}</td>
                     <td>${level}</td>
                     <td>${downloaded}</td>
                     <td>${source}</td>
                 </tr>`;
-    if (!array_contain(nodeIds, sn)) {
-        nodes.add({id: sn, label: String(sn)});
-        nodeIds.push(sn);
-        edges.add({from: sn, to: -1});
-        nodeInformation [sn] = `<tr>
+    } else {
+        cubeInformation [sn] += `<tr>
                     <td>${sn}</td>
                     <td>${url}</td>
                     <td>${level}</td>
@@ -36,15 +53,21 @@ var addToTable = function (sn, url, level, downloaded, source) {
                     <td>${source}</td>
                 </tr>`;
     }
+    document.getElementById("p2pRatio").innerText = ((p2pcount/(p2pcount+cdncount))*100).toFixed(2)+"%";
+    var acube = document.createElement("div");
+    acube.className = "col-md-1";
+    acube.innerHTML = "<button class=\"btn " + cube_class + " btn-default\" onclick='click_cube(this)'>" + sn + "</button>";
+    // "<div class=\"col-md-1 " + "\" ></div>"
+    cubediv.appendChild(acube);
 
-    nodeInformation [sn] += `<tr>
-                    <td>${sn}</td>
-                    <td>${url}</td>
-                    <td>${level}</td>
-                    <td>${downloaded}</td>
-                    <td>${source}</td>
-                </tr>`;
 };
+
+function click_cube(that) {
+    var key = that.innerText;
+    if (cubeInformation[key] !== undefined) {
+        document.getElementById('node-info').innerHTML = cubeInformation[key];
+    }
+}
 
 
 function array_contain(array, obj) {
@@ -90,7 +113,7 @@ function playVideo() {
 //            defaultUploadBW: 2561241,
 //            defaultUploadBW: 2561241 + 100,
 //            defaultUploadBW: 853290*3+1000,
-        defaultUploadBW: 2557670/3*5,
+        defaultUploadBW: 2557670 / 3 * 5,
 //            transitionEnabled: true,
         transitionEnabled: false,
         transitionCheckInterval: 90
@@ -98,17 +121,15 @@ function playVideo() {
     var hls = new Hls(hlsjsConfig);
     var p2pPlugin = new HlsPeerify(hls, p2pConfig);
 
-    nodeIds = new Array();
-    nodeInformation = {};
-    createTopo();
+    cubeIds = new Array();
+    cubeInformation = {};
+    // createTopo();
     document.getElementById('node-info').innerHTML = "";
+    document.getElementById('cube-div').innerHTML = "";
     cpm.table.innerHTML = "";
 
-//        hls.loadSource('https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8');
-//        hls.loadSource('https://video-dev.github.io/streams/test_001/stream.m3u8');
     var videoURL = document.getElementById("videoURL").value;
     hls.loadSource(videoURL);
-//        hls.loadSource('http://wowza.peer5.com/live/smil:bbb_abr.smil/chunklist_w794046364_b2204000.m3u8');
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
         hls.loadLevel = 0;
@@ -116,8 +137,7 @@ function playVideo() {
     });
     hls.on(Hls.Events.FRAG_LOADED, (id, data) => {
         var frag = data.frag;
-//            console.warn(`sn ${frag.sn} relurl ${frag.relurl} level ${frag.level} downloaded ${frag.loaded} source ${frag.loadByXhr?'CDN':'P2P'}`);
-        var source = frag.loadByXhr?'CDN':'P2P';
+        var source = frag.loadByXhr ? 'CDN' : 'P2P';
         addToTable(frag.sn, frag.relurl, frag.level, frag.loaded, source);
     });
 
@@ -125,7 +145,7 @@ function playVideo() {
         var errorType = data.type;
         var errorDetails = data.details;
         var errorFatal = data.fatal;
-        console.warn('error details:'+errorDetails);
+        console.warn('error details:' + errorDetails);
     });
 
 
@@ -136,36 +156,4 @@ function resetURL() {
     playVideo();
 }
 
-
-function createTopo() {
-    // create an array with nodes
-    nodes = new vis.DataSet([
-        {id: -1, label: 'Me', color: 'rgb(255,168,7)'},
-    ]);
-    nodeIds.push(-1);
-    nodeInformation[-1] = 'This computer'
-    // create an array with edges
-    edges = new vis.DataSet([]);
-
-    // create a network
-    var container = document.getElementById('mynetwork');
-    var data = {
-        nodes: nodes,
-        edges: edges
-    };
-    var options = {
-        autoResize: true,
-        interaction: {hover: true}
-    };
-    network = new vis.Network(container, data, options);
-
-    network.on("click", function (params) {
-        // console.log(params.nodes);
-        // console.log(nodeInformation[params.nodes]);
-        if (nodeInformation[params.nodes] !== undefined) {
-            document.getElementById('node-info').innerHTML = nodeInformation[params.nodes];
-        }
-
-    });
-}
 
