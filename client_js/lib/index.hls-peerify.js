@@ -31,7 +31,8 @@ class HlsPeerify extends EventEmitter {
         this.config = Object.assign({}, defaultP2PConfig, p2pConfig);
 
         this.hlsjs = hlsjs;
-        this.p2pEnabled = this.config.disableP2P === false ? false : true;                                      //默认开启P2P
+        this.p2pEnabled = this.config.disableP2P === false ? false : true;//默认开启P2P
+        this.bw = 2557670/3*5;
 
         hlsjs.config.currLoaded = hlsjs.config.currPlay = 0;
 
@@ -73,6 +74,9 @@ class HlsPeerify extends EventEmitter {
 
         //实例化信令
         this.signaler = new P2PSignaler(channel, this.config, browserInfo);
+        this.signaler.on("stats", stats => {
+            this.emit("stats", stats);
+        });
 
         //实例化BufferManager
         this.bufMgr = new BufferManager(this.config);
@@ -110,13 +114,15 @@ class HlsPeerify extends EventEmitter {
                 log(`FRAG_LOADED ${data.frag.sn} loadByP2P`);
                 this.p2pDownloaded += data.frag.loaded;
             }
+            //计算平均streaming rate
+            let bitrate = data.frag.loaded*8/data.frag.duration;
+            this.emit('stats', {bitrate: Math.round(bitrate)});
             if (!this.signaler.connected && this.config.p2pEnabled) {
 
-                //计算平均streaming rate
-                let bitrate = data.frag.loaded*8/data.frag.duration;
+                // let bitrate = data.frag.loaded*8/data.frag.duration;
                 //计算子流码率
                 this.signaler.scheduler.substreams.bitrate = Math.round(bitrate);
-                console.warn(`FRAG_LOADED bitrate ${bitrate}`);
+                // console.warn(`FRAG_LOADED bitrate ${bitrate}`);
 
                 this.signaler.resumeP2P();
             }
@@ -170,6 +176,10 @@ class HlsPeerify extends EventEmitter {
         }
     }
 
+    updateBW(bw) {
+        this.bw = bw;
+    }
+
     _statisticsReport() {
         // let ul_srs = {};
         // let substreams = this.signaler.scheduler.substreams;
@@ -188,7 +198,8 @@ class HlsPeerify extends EventEmitter {
                 source: Math.round(this.cdnDownloaded/1024),                  //单位KB
                 p2p: Math.round(this.p2pDownloaded/1024),
                 // ul_srs: ul_srs,
-                plr: 0                                                        //todo
+                plr: 0,   //todo
+                bw: this.bw
             };
             this.signaler.send(msg);
             this.cdnDownloaded = this.p2pDownloaded = 0;                   //上报的是增量部分

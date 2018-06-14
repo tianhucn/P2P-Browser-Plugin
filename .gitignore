@@ -4,4 +4,14 @@
 .idea/P2P-Browser-Plugin.iml
 .idea/vcs.xml
 .idea/workspace.xml
+rp_server/rp_server
+rp_server/rp_server.exe
+rp_server/vendor
 client_js/node_modules
+client_visual/node_modules
+rp_server/.DS_Store
+
+*.iml
+*.json
+*.map
+*.map

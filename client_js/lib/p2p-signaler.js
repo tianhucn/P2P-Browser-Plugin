@@ -126,6 +126,7 @@ export default class P2PSignaler extends EventEmitter {
 
         websocket.push = websocket.send;
         websocket.send = msg => {
+            if (!this.connected) return;
             let msgStr = JSON.stringify(Object.assign({peer_id: this.peerId}, msg));
             console.log("send to websocket Signaler is " + msgStr);
             websocket.push(msgStr);
@@ -136,6 +137,7 @@ export default class P2PSignaler extends EventEmitter {
             let action = msg.action;
             switch (action) {
                 case 'signal':
+                    if (!msg.data) return;
                     console.log('start _handleSignal');
                     this._handleSignal(msg.from_peer_id, msg.data);
                     break;
@@ -152,6 +154,7 @@ export default class P2PSignaler extends EventEmitter {
             console.warn(`Signaler websocket closed`);
             this.connected = false;
         };
+
         return websocket;
     }
 
@@ -167,13 +170,18 @@ export default class P2PSignaler extends EventEmitter {
 
         websocket.onopen = () => {
             console.log('websocket connection opened with channel: ' + this.channel);
-
+            var time = new Date();
+            
             //发送进入频道请求
             let msg = {
                 action: 'enter',
+                sendtimemiu:time.getMinutes(),
+                sendtimesecond:time.getSeconds(),
+                sendtimeMs: time.getMilliseconds(),
                 channel: this.channel,
                 ul_bw: Math.round(this.config.defaultUploadBW)
             };
+
 
             if (info) {
                 msg = Object.assign(msg, info);
@@ -264,23 +272,8 @@ export default class P2PSignaler extends EventEmitter {
             }
             return true;
         });
-
         //按上行带宽从小到大排序
         nodes.sort((a, b) => a.residual_bw - b.residual_bw);
-        //相同子网优先：在剩余带宽大于本批最大剩余带宽的0.7情况下，选出拥有最大带宽的相同子网节点放到队尾
-        var max_bw = nodes[nodes.length-1].residual_bw;
-        for(let i = 0; i > nodes.length-1 ; i++){
-            console.log("**********************");
-            var request_ip = nodes[i].requestip.split(".", 3);
-            var parent_ip = nodes[i].ip.split(".", 3);
-            if(request_ip == parent_ip && nodes[i].residual_bw > 0.7*max_bw){
-                console.log("+++++++++++++++++++++++++++");
-                var temp = nodes[i];
-                nodes.split(i,1);
-                nodes.push(temp);
-            }
-            break;
-        }
 
         this.candidateParents = nodes;
         // console.log(`candidateParents: ${JSON.stringify(this.candidateParents)}`);
@@ -296,7 +289,6 @@ export default class P2PSignaler extends EventEmitter {
             parent = this.candidateParents.pop();
         }
         const subStreamRate = this.scheduler.substreams.substreamRate;
-
         if (parent.residual_bw >= subStreamRate) {
             let copys = Math.floor(parent.residual_bw/subStreamRate);
             console.warn(`residual_bw ${parent.residual_bw} subStreamRate ${subStreamRate}`);
@@ -411,6 +403,8 @@ export default class P2PSignaler extends EventEmitter {
                     }
                 }
 
+                this.emit('stats', {failConn: true});
+
                 datachannel.destroy();
 
             })
@@ -436,6 +430,8 @@ export default class P2PSignaler extends EventEmitter {
                     this.schedulerWs.send(msg);
                     this.getParentsTimes ++;
                 }
+
+                this.emit('stats', {closedConn: true});
 
                 datachannel.destroy();
 
@@ -477,7 +473,10 @@ export default class P2PSignaler extends EventEmitter {
                     this.schedulerWs.send(msg);
                 }
                 // console.warn(`parents num: ${this.scheduler.upstreamers.length}`);
+                this.emit('stats', {openedConn: true});
             })
+
+
     }
 
     destroy() {
