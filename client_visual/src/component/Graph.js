@@ -6,6 +6,7 @@ import vis from "vis";
 import uuid from "uuid";
 import PropTypes from "prop-types";
 
+
 class Graph extends Component {
     constructor(props) {
         super(props);
@@ -126,8 +127,13 @@ class Graph extends Component {
             interaction: {hover: true},
             layout: {
                 hierarchical: {
+                    sortMethod: "directed",
                     direction: "UD"
                 }
+            },
+            edges: {
+                smooth: true,
+                arrows: {to: true}
             }
         };
 
@@ -145,21 +151,29 @@ class Graph extends Component {
         // var tempThis = this;
         this.Network.on("click", function (params) {
             if (this.props.nodeinfo[params.nodes] !== undefined) {
+                let mystyle = "padding:6px;color:#474748;border:2px;background:white;border-radius:5px;margin-left:3px;margin-right:3px";
+
                 let infolist = this.props.nodeinfo[params.nodes];
-                let isp = "", province = "", city = "";
-                if (infolist[0] === "Server"){
-                    isp = "<b>Server</b>"
+                let isp = "", province = "", city = "", ipaddr = "", netspeed = "";
+                if (infolist[0] === "Server") {
+                    isp = "<span style=" + mystyle + "> <b>Server</b></span>"
                 }
                 else if (infolist[0] !== undefined) {
-                    isp = "<p > <b>ISP:</b> " + infolist[0] + "</p>"
+                    isp = "<span style=" + mystyle + "> <b>ISP:</b> " + infolist[0] + "</span>"
                 }
                 if (infolist[1] !== undefined) {
-                    province = "<p> <b>省份:</b>  " + infolist[1] + "</p>"
+                    province = "<span style="+mystyle+"> <b>省份:</b>  " + infolist[1] + "</span>"
                 }
                 if (infolist[2] !== undefined) {
-                    city = "<p> <b>城市:</b> " + infolist[2] + "</p>"
+                    city = "<span style="+mystyle+">  <b>城市:</b> " + infolist[2] + "</span>"
                 }
-                this.setState({info: isp + province + city});
+                if (infolist[3] !== undefined) {
+                    ipaddr = "<span style="+mystyle+"> <b>IP:</b> " + infolist[3] + "</span>"
+                }
+                if (infolist[4] !== undefined) {
+                    netspeed = "<span style="+mystyle+"> <b>速度:</b> " + infolist[4] + "</span>"
+                }
+                this.setState({info: isp + province + city + ipaddr});
             }
         }.bind(this));
 
@@ -192,15 +206,40 @@ class Graph extends Component {
 // }, identifier),
 // React.createElement("input", {id: "infodiv", value: this.state.info}, )
     render() {
+        let mystyle = {
+            padding:'6px',
+            color: '#474748',
+            border:'1px solid #E7EAEC',
+            background:'white',
+            borderRadius:'5px'
+        };
         const {identifier} = this.state;
         const {style} = this.props;
+        style.border = '1px solid #E7EAEC';
+        style.width = '1200px';
+        style.marginLeft = 'auto';
+        style.marginRight = 'auto';
+        style.marginTop = '50px';
+        style.marginBottom = '50px';
+        style.background = '#FAFAFB';
+        style.borderRadius = '8px';
         console.log("render");
+        let backgroundstyle = {
+            paddingTop: '30px',
+            paddingBottom: '30px',
+            marginBottom: '30px',
+            color: 'inherit',
+            backgroundColor: '#eee',
+        };
         return (
-
             <div>
-                <div style={style} id={identifier}>{identifier}
+                <div style={backgroundstyle}>
+                    <div>
+                        <div style={style} id={identifier}>{identifier}
+                        </div>
+                    </div>
+                    <div ref="para"/>
                 </div>
-                <div ref="para"/>
             </div>
         );
 

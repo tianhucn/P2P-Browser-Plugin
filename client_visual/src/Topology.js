@@ -9,43 +9,8 @@ class Topology extends Component {
     constructor() {
         super();
         this.nodeMap = new Map();             //id --> totalStreams
-
         this._setupStats();                   //周期性获取统计信息
-
-        this.state = {
-            totalStreams: 0,
-            graph: {
-                nodes: [],
-                edges: []
-            },
-            options: {
-                physics: false,
-                layout: {
-                    hierarchical: false
-                },
-                edges: {
-                    color: "#000000",
-
-                },
-                nodes: {
-                    shape: 'ellipse'
-                },
-            },
-            events: {
-                select: function (event) {
-                    var {nodes, edges} = event;
-                }
-            },
-            stats: {
-                normalized: false,
-                p2p: 0,
-                source: 0,
-                p2pBase: 0,
-                sourceBase: 0,
-            },
-            nodeinformation: {},
-        };
-
+        this.state = {};
         this.myurl = 'https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8'
         this.topo(this.myurl);
     }
@@ -62,7 +27,6 @@ class Topology extends Component {
                 edges: []
             },
             options: {
-                physics: false,
                 layout: {
                     hierarchical: false
                 },
@@ -86,6 +50,7 @@ class Topology extends Component {
                 p2pBase: 0,
                 sourceBase: 0,
             },
+            p2pratio: 0,
             nodeinformation: {},
         };
         const wsOptions = {
@@ -115,6 +80,7 @@ class Topology extends Component {
                 }
                 case 'topology': {
                     let nodes = msg.nodes;
+                    this.setState({p2pratio: msg.p2pratio});
                     this.state.totalStreams = msg.totalstreams;
                     this._initGraph(nodes);
                     break
@@ -139,11 +105,13 @@ class Topology extends Component {
             }
         };
     }
-    changeUrl(e){
+
+    changeUrl(e) {
         // this.state.stats.url = e.target.value;
         // this.topo(e.target.value)
         this.myurl = e.target.value;
     }
+
     confirm() {
         console.log(this.myurl);
         this.topo(this.myurl);
@@ -165,7 +133,7 @@ class Topology extends Component {
         let newStats = Object.assign(this.state.stats, {
             p2p: result.p2p,
             source: result.source,
-        })
+        });
         this.setState({
             stats: newStats
         })
@@ -189,9 +157,10 @@ class Topology extends Component {
         let info = node.info;
         // let label = `${info.country!='0'?info.country:''}${info.province!='0'?info.province:''}${info.city!='0'?info.city:''}${info.ISP!='0'?info.ISP:''}${node.id}`;
         //let label = `${node.id.substr(0,2)}(${Math.round(info.ul_bw/8/1024)}KB/s)`;
-        let label = `${node.id.substr(0, 4)}[${info.IP}](${Math.round(info.ul_bw / 8 / 1024)}KB/s)`;
+        let label = `${node.id.substr(0, 4)}`;
         // this.state.nodeinformation [node.id] = [info.ISP, info.Province, info.City];
-        console.log([info.ISP, info.Province, info.City])
+        console.log([info.ISP, info.Province, info.City]);
+        this.state.nodeinformation [node.id] = [info.ISP, info.Province, info.City, info.IP, Math.round(info.ul_bw / 8 / 1024) + "KB/s"];
         this.setState({
             graph: {
                 nodes: [
@@ -269,14 +238,15 @@ class Topology extends Component {
             let info = node.info;
             // let label = `${info.country!='0'?info.country:''}${info.province!='0'?info.province:''}${info.city!='0'?info.city:''}${info.ISP!='0'?info.ISP:''}${node.id}`;
             //let label = `${node.id.substr(0,2)}(${Math.round(info.ul_bw/8/1024)}KB/s)`;
-            let label = `${node.id.substr(0, 4)}[${info.IP}](${Math.round(info.ul_bw / 8 / 1024)}KB/s)`;
+            // let label = `${node.id.substr(0, 4)}[${info.IP}](${Math.round(info.ul_bw / 8 / 1024)}KB/s)`;
+            let label = `${node.id.substr(0, 4)}`;
             // console.log(info.ISP);
             nodes.push({
                 id: node.id,
                 label: label
             });
             // console.log(this.state);
-            this.state.nodeinformation [node.id] = [info.ISP, info.Province, info.City];
+            this.state.nodeinformation [node.id] = [info.ISP, info.Province, info.City, info.IP, Math.round(info.ul_bw / 8 / 1024) + "KB/s"];
 
             if (node.parents.length == 0) {
                 edges.push({
@@ -292,7 +262,7 @@ class Topology extends Component {
                         from: parent.id,
                         to: node.id,
                         label: parent.substreams + ''
-                    })
+                    });
                     streamCount += parent.substreams;
                 }
                 if (streamCount < this.state.totalStreams) {
@@ -339,29 +309,82 @@ class Topology extends Component {
     }
 
     render() {
+        let inputstyle = {
+            padding: '5px',
+            border: '1px solid #E7EAEC',
+            width: '500px',
+            height: '20px',
+            background: '#FAFAFB',
+            borderRadius: '5px',
+            color: '#474748',
+            margin: '3px'
+        };
+        let buttonstyle = {
+            padding: '5px',
+            height: '30px',
+            borderRadius: '5px',
+            color: '#fdfdff',
+            margin: '3px',
+            border: '1px solid #7bb4ff',
+            background: '#397dcc',
+            hover: {
+                background: '#7bb4ff'
+            }
+        };
 
+        let mystyle = {
+            padding: '6px',
+            color: '#474748',
+            border: '1px solid #E7EAEC',
+            background: 'white',
+            borderRadius: '5px',
+            fontWeight: "600"
+        };
+        let headstyle = {
+            background: '#222222',
+            color: '#ba9444',
+            padding: '20px',
+            paddingLeft: '120px',
+            textAlign: 'left'
+        };
+        let footstyle = {
+            marginTop: '60px',
+        background: '#333',
+        color: '#eee',
+        fontSize: '11px',
+        padding: '20px',
+        };
         let stats = this.state.stats;
         let p2p = stats.p2p - stats.p2pBase;
         let source = stats.source - stats.sourceBase;
+        let p2pratio = this.state.p2pratio.toFixed(2);
         // let nodeinfo = this.nodeinformation;
         // let url = stats.url;
         return (
 
             <div>
+                <header style={headstyle}>
+                    <h1>P2P Topology Visual</h1>
+                </header>
                 <Graph style={{height: "640px"}} graph={this.state.graph} options={this.state.options}
                        events={this.state.events} nodeinfo={this.state.nodeinformation}/>
-                <p>p2p: {p2p}KB source: {source}KB </p>
+                <p><span style={mystyle}>p2p: {p2p}KB    source: {source}KB    P2Pratio: {p2pratio}%</span></p>
                 <div>
-                    <span>视频URL</span>
-                    <input  type="text" id="videoURL" style ={{width: "400px"}} placeholder="请在此输入视频链接"
-                           defaultValue={this.myurl} onChange={(e)=>this.changeUrl(e)}/>
-                        <button className="btn btn-primary" type="button" onClick={() => this.confirm()}>确定</button>
+                    <span style={mystyle}>视频URL</span>
+                    <input type="text" id="videoURL" style={inputstyle} placeholder="请在此输入视频链接"
+                           defaultValue={this.myurl} onChange={(e) => this.changeUrl(e)}/>
+                    <button className="btn btn-primary" style={buttonstyle} type="button"
+                            onClick={() => this.confirm()}>确定
+                    </button>
                 </div>
+                <footer style={footstyle}>
+                    <p>Project of Software Engineering, SUSTech. </p>
+                    <p>Pear Limited.</p>
+                </footer>
             </div>
         );
     }
 }
-
 
 
 export default Topology;
